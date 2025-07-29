@@ -2,8 +2,24 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #18181b;
+  --color-ventana: #18181b;
+  --primary-accent: #f59e0b;
+  --secondary-accent: #3b82f6;
+  --muted-foreground: #71717a;
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #050505;
+    --foreground: #f4f4f5;
+    --color-ventana: #454545;
+    --primary-accent: #f59e0b;
+    --secondary-accent: #60a5fa;
+    --muted-foreground: #a1a1aa;
+  }
+}
+
 
 @theme inline {
   --color-background: var(--background);
@@ -12,15 +28,28 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.intro-door-bg {
+  background-color: var(--color-ventana);
+}
+
+.font-playfair {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(60px, 10vw, 180px);
+  letter-spacing: 15px;
+}
+
+::selection {
+  background-color: rgb(from var(--primary-accent) r g b / 0.6);
+  color: var(--background);
+}
+
+body::-webkit-scrollbar {
+  display: none;
 }

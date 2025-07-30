@@ -1,0 +1,24 @@
+/* Archivo: FlowingMenu.css */
+
+/* 1. Equivalente a la sección 'keyframes' en tailwind.config.js */
+@keyframes marquee {
+  from {
+    transform: translateX(0%);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* 2. Clase que reemplaza 'animate-marquee' */
+/* Esta clase aplicará la animación definida arriba. */
+.marquee-content-animated {
+  animation: marquee 15s linear infinite;
+}
+
+/* 3. Clase que reemplaza 'translate-y-[101%]' */
+/* GSAP usará esto como el estado inicial para la animación de entrada/salida. */
+.marquee-container-initial {
+  transform: translateY(101%);
+}

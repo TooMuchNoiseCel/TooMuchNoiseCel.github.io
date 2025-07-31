@@ -3,7 +3,6 @@
 import React from 'react';
 import { Element } from 'react-scroll';
 import Input from '@/components/Input';
-import Button from '@/components/Button';
 import FlowingMenu from './FlowingMenu';
 
 const ContactSection = () => {
@@ -47,7 +46,6 @@ const ContactSection = () => {
               />
             </div>
             <div className="pt-4">
-              <Button text="Enviar Mensaje" type="submit" className="w-full flex justify-center py-3" />
             </div>
           </form>
         </div>

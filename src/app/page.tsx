@@ -1,4 +1,3 @@
-// app/page.tsx (MODIFICADO)
 'use client';
 
 import IntroAnimation from '@/components/IntroAnimation';

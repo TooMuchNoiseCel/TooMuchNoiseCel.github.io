@@ -18,7 +18,7 @@ const defaultProjects: Project[] = [
   { id: 4, name: ['Marmol'], href: '#' },
   { id: 5, name: ['Telemetria', 'Cohete'], href: '#' },
   { id: 6, name: ['Patente'], href: '#' },
-  //{ id: 7, name: ['Zervice'], href: '#' },
+  { id: -1, name: [''], href: '#' },
 ];
 
 const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaultProjects }) => {
@@ -61,7 +61,7 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
           ].join(' ');
 
           return (
-            <li key={project.id} className="cursor-pointer [transform-style:preserve-3d] font-rubik">
+            <li key={project.id} className="cursor-pointer [transform-style:preserve-3d] font-rubik mb-4">
               <div
                 className={containerClasses}
                 style={{ animationDelay: `${staggerDelay}s` }}
@@ -70,7 +70,7 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
                   href={project.href}
                   //data-info={project.year}
                   className={`
-                    block relative p-[10px_0] text-transparent uppercase
+                    block relative p-[20px_0] text-transparent uppercase
                     font-rubik text-[8vw] md:text-[8vw] lg:text-[9.6vw]
                     leading-[0.9] tracking-wider whitespace-pre
                     transition-colors duration-500 hover:text-gray-100

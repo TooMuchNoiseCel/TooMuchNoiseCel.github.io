@@ -42,11 +42,11 @@ interface Dibujable {
     update(p5: P5): void;
 }
 
-var arr = new LimitedList < Cuadrado > (22);
-var lin = new LimitedList < Point > (13);
-var puntosParaBezier = new LimitedList < Point > (5);
-var boids = new LimitedList < Boid > (80);
-var nodosTexto = new LimitedList < NodoTexto > (10);
+let arr = new LimitedList < Cuadrado > (22);
+let lin = new LimitedList < Point > (13);
+let puntosParaBezier = new LimitedList < Point > (5);
+let boids = new LimitedList < Boid > (80);
+let nodosTexto = new LimitedList < NodoTexto > (10);
 
 interface Point {
   x: number;
@@ -136,9 +136,6 @@ class NodoTexto implements Dibujable {
     }
 }
 
-// =========================================================================
-// CORREGIDO: La clase Boid ahora usa p5.constructor.Vector en lugar de P5.Vector
-// =========================================================================
 class Boid implements Dibujable {
     position: P5.Vector;
     velocity: P5.Vector;
@@ -146,16 +143,15 @@ class Boid implements Dibujable {
     maxSpeed = 2;maxForce = 0.05;
     constructor(p5: P5, x: number, y: number) {
         this.position = p5.createVector(x, y);
-        // CORREGIDO: Usar la instancia `p5` para acceder a métodos estáticos.
         this.velocity = p5.constructor.Vector.random2D();
         this.velocity.setMag(p5.random(1, 2));
         this.acceleration = p5.createVector();
     }
 
     flock(p5: P5, boids: Boid[]) {
-        let separation = this.separate(p5, boids);
-        let alignment = this.align(p5, boids);
-        let cohesion = this.cohere(p5, boids);
+        const separation = this.separate(p5, boids);
+        const alignment = this.align(p5, boids);
+        const cohesion = this.cohere(p5, boids);
         separation.mult(1.5);
         alignment.mult(1.0);
         cohesion.mult(1.0);
@@ -279,7 +275,7 @@ const RandomSquaresSketch: React.FC < RandomSquaresSketchProps > = (props) => {
             p5.background(10, 20, 40);
         }
 
-        for (var i = 0; i < 2; i++) {
+        for (let i = 0; i < 2; i++) {
             const spawnRadius = 250;
             const x = p5.random(p5.mouseX - spawnRadius, p5.mouseX + spawnRadius);
             const y = p5.random(p5.mouseY - spawnRadius, p5.mouseY + spawnRadius);
@@ -304,7 +300,7 @@ const RandomSquaresSketch: React.FC < RandomSquaresSketchProps > = (props) => {
 
         p5.stroke(255);
         p5.strokeWeight(1);
-        var pre: Point | undefined;
+        let pre: Point | undefined;
         for (const l of lin) {
             if (pre) {
                 p5.line(l.x, l.y, pre.x, pre.y);

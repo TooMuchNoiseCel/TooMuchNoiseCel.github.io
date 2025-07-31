@@ -1,4 +1,4 @@
-import { useRef, forwardRef, useEffect } from "react";
+import { useRef, forwardRef, useEffect,useState } from "react";
 import { Canvas, useFrame, useThree, ThreeEvent } from "@react-three/fiber";
 import { EffectComposer, wrapEffect } from "@react-three/postprocessing";
 import { Effect } from "postprocessing";
@@ -286,11 +286,15 @@ export default function Dither({
   enableMouseInteraction = true,
   mouseRadius = 1,
 }: DitherProps) {
+  const [dpr, setDpr] = useState(1);
+  useEffect(() => {
+    setDpr(window.devicePixelRatio);
+  }, []);
   return (
     <Canvas
       className="w-full h-full relative"
       camera={{ position: [0, 0, 6] }}
-      dpr={window.devicePixelRatio}
+      dpr={dpr}
       gl={{ antialias: true, preserveDrawingBuffer: true }}
       frameloop={isVisible ? 'always' : 'never'}
     >

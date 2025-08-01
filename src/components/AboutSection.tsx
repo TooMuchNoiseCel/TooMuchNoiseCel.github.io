@@ -3,7 +3,27 @@
 import React, { Suspense } from 'react';
 import { Element } from 'react-scroll';
 
-const TextRing = React.lazy(() => import('@/components/TextRing'));
+//const TextRing = React.lazy(() => import('@/components/TextRing'));
+import dynamic from 'next/dynamic';
+
+
+const TextRing = dynamic(
+  () => import('@/components/TextRing'),
+  {
+    // Importantísimo: Evita que se incluya en el renderizado del servidor.
+    // Three.js y R3F necesitan el objeto `window` del navegador.
+    ssr: false,
+    
+    // Muestra este componente mientras el componente TextRing se está cargando.
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center bg-white">
+        <p className="text-black text-lg">Cargando animación 3D...</p>
+        {/* Aquí podrías poner un spinner de Tailwind si quieres */}
+      </div>
+    ),
+  }
+);
+
 
 const AboutSection = () => {
   return (

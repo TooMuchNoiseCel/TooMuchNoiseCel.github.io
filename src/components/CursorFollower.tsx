@@ -1,36 +1,40 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from "react";
 
 const CursorFollower = () => {
-  const [position, setPosition] = useState({ x: -1, y: -1 });
+  const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
+    let raf = 0;
+    let x = -1;
+    let y = -1;
+    const update = () => {
+      if (ref.current) {
+        ref.current.style.transform = `translate(${x - 15}px, ${y - 15}px)`;
+      }
+      raf = requestAnimationFrame(update);
     };
-
-    window.addEventListener('mousemove', handleMouseMove);
-
+    const onMove = (e: MouseEvent) => {
+      x = e.clientX;
+      y = e.clientY;
+    };
+    raf = requestAnimationFrame(update);
+    window.addEventListener("mousemove", onMove);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(raf);
+      window.removeEventListener("mousemove", onMove);
     };
   }, []);
+
   return (
     <div
+      ref={ref}
       className="
-        fixed
-        w-10 h-10
-        rounded-full
-        pointer-events-none 
-        transition-transform duration-150 ease-out
-        z-50
-        backdrop-blur-sm
-        ring-1
+        fixed w-10 h-10 rounded-full pointer-events-none
+        transition-transform duration-150 ease-out z-50
+        backdrop-blur-sm ring-1
       "
-      style={{
-        transform: `translate(${position.x - 15}px, ${position.y - 15}px)`,
-      }}
     />
   );
 };

@@ -1,19 +1,20 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { gsap } from 'gsap';
-import Loader from './Loader';
 import RotatingText from './RotatingText';
 
 const Header = () => {
   const [isLoaderFinished, setIsLoaderFinished] = useState(false);
 
-  const rotatingSubtitles = [
-    'Front End Developer',
-    'Creative Coder',
-    'UI/UX Enthusiast',
-    'Problem Solver',
-    'Lifelong Learner',
-  ];
+const rotatingSubtitles = [
+  'Coder',
+  'Full Stack Developer',
+  'UI/UX Problem Solver',
+  'Systems Thinker',
+  'Lifelong Learner',
+  'Systems & Algorithms Enthusiast',
+  'Low-Level & High-Level Programmer',
+];
 
   useEffect(() => {
     gsap.set('.reveal-line-content', { yPercent: 100 });
@@ -34,8 +35,6 @@ const Header = () => {
       className="relative z-10 flex h-screen items-center justify-center overflow-hidden bg-black text-white"
       data-scroll-section
     >
-      <Loader onLoaderFinished={() => setIsLoaderFinished(true)} />
-
       <div className="cursor-default text-center">
         <h1 className="mb-4 font-playfair text-[clamp(2.5rem,10vw,7rem)] font-medium leading-[1.1] text-white">
           <span className="block overflow-hidden">
@@ -46,7 +45,6 @@ const Header = () => {
           </span>
         </h1>
         
-        {isLoaderFinished && ( 
           <div className="text-[clamp(0.8rem,3vw,1.2rem)] font-extralight tracking-wider text-neutral-400">
             <RotatingText
               texts={rotatingSubtitles}
@@ -55,7 +53,6 @@ const Header = () => {
     mainClassName="justify-center" 
             />
           </div>
-        )}
 
       </div>
     </header>

@@ -287,9 +287,13 @@ export default function Dither({
   mouseRadius = 1,
 }: DitherProps) {
   const [dpr, setDpr] = useState(1);
+  const isMobile =
+    typeof window !== "undefined" && window.innerWidth < 768;
+
   useEffect(() => {
-    setDpr(window.devicePixelRatio);
-  }, []);
+    const devDpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 1.5);
+    setDpr(devDpr);
+  }, [isMobile]);
   return (
     <Canvas
       className="w-full h-full relative"

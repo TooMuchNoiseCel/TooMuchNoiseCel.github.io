@@ -6,19 +6,27 @@ import RotatingText from './RotatingText';
 const Header = () => {
   const [isLoaderFinished, setIsLoaderFinished] = useState(false);
 
-const rotatingSubtitles = [
-  'Coder',
-  'Full Stack Developer',
-  'UI/UX Problem Solver',
-  'Systems Thinker',
-  'Lifelong Learner',
-  'Systems & Algorithms Enthusiast',
-  'Low-Level & High-Level Programmer',
-];
+  const rotatingSubtitles = [
+    'Coder',
+    'Full Stack Developer',
+    'UI/UX Problem Solver',
+    'Systems Thinker',
+    'Lifelong Learner',
+    'Systems & Algorithms Enthusiast',
+    'Low-Level & High-Level Programmer',
+  ];
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoaderFinished(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     gsap.set('.reveal-line-content', { yPercent: 100 });
-    
+
     if (isLoaderFinished) {
       const tl = gsap.timeline();
       tl.to('.reveal-line-content', {
@@ -44,16 +52,15 @@ const rotatingSubtitles = [
             <span className="reveal-line-content inline-block">Castañeda</span>
           </span>
         </h1>
-        
-          <div className="text-[clamp(0.8rem,3vw,1.2rem)] font-extralight tracking-wider text-neutral-400">
-            <RotatingText
-              texts={rotatingSubtitles}
-              staggerDuration={0.03}
-              rotationInterval={3000}
-    mainClassName="justify-center" 
-            />
-          </div>
 
+        <div className="text-[clamp(0.8rem,3vw,1.2rem)] font-extralight tracking-wider text-neutral-400">
+          <RotatingText
+            texts={rotatingSubtitles}
+            staggerDuration={0.03}
+            rotationInterval={3000}
+            mainClassName="justify-center"
+          />
+        </div>
       </div>
     </header>
   );

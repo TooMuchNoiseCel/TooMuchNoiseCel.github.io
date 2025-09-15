@@ -18,7 +18,6 @@ const defaultProjects: Project[] = [
   { id: 4, name: ['Marmol'], href: '#' },
   { id: 5, name: ['Telemetria', 'Cohete'], href: '#' },
   { id: 6, name: ['Patente'], href: '#' },
-  { id: -1, name: [''], href: '#' },
 ];
 
 const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaultProjects }) => {
@@ -53,27 +52,27 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
 
           const containerClasses = [
             'transition-transform duration-[1200ms] ease-[cubic-bezier(0.075,0.82,0.165,1)]',
-            'hover:[transform:rotateY(0deg)]',
-            '[transform-origin:right_center]',
-            '[transform:rotateY(-45deg)]',
+            'group-hover:rotate-y-0',
+            'origin-right',
+            '-rotate-y-45',
             'will-change-transform',
+            'kitty',
             isIntroActive ? 'intro-initial-state animate-intro-project' : ''
           ].join(' ');
 
           return (
-            <li key={project.id} className="cursor-pointer [transform-style:preserve-3d] font-rubik mb-4">
+            <li key={project.id} className="group cursor-pointer [transform-style:preserve-3d] font-rubik mb-4">
               <div
                 className={containerClasses}
                 style={{ animationDelay: `${staggerDelay}s` }}
               >
                 <a
                   href={project.href}
-                  //data-info={project.year}
                   className={`
                     block relative p-[20px_0] text-transparent uppercase
                     font-rubik text-[8vw] md:text-[8vw] lg:text-[9.6vw]
                     leading-[0.9] tracking-wider whitespace-pre
-                    transition-colors duration-500 hover:text-gray-100
+                    transition-colors duration-500 group-hover:text-gray-100 // <-- También podemos usar group-hover aquí
                     text-stroke
 
                     before:content-[attr(data-info)] before:absolute before:top-[3.7em]

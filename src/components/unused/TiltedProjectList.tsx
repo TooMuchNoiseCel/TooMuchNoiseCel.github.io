@@ -12,12 +12,12 @@ interface TiltedProjectListProps {
 }
 
 const defaultProjects: Project[] = [
-  { id: 1, name: ['Compilador en', 'Zig'], href: 'https://google.com' },
-  { id: 2, name: ['Robot', 'Humanoide'], href: '#' },
-  { id: 3, name: ['Robot Sumo'], href: '#' },
-  { id: 4, name: ['Marmol'], href: '#' },
+  { id: 1, name: ['Compilador en', 'Zig'], href: '/proyectos/compilador' },
+//  { id: 2, name: ['Robot', 'Humanoide'], href: '#' },
+//  { id: 3, name: ['Robot Sumo'], href: '#' },
+  { id: 4, name: ['Marmol'], href: '/proyectos/marmol' },
   { id: 5, name: ['Telemetria', 'Cohete'], href: '#' },
-  { id: 6, name: ['Patente'], href: '#' },
+  { id: 6, name: ['Casco Patente'], href: '/proyectos/casco' },
 ];
 
 const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaultProjects }) => {

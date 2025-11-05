@@ -1,6 +1,7 @@
 'use client';
 
 import Dither from '@/components/unused/Dither';
+import BackButton from '@/components/BackButton';
 import { FaGithub, FaTerminal, FaWrench } from 'react-icons/fa';
 import Link from 'next/link';
 
@@ -18,6 +19,8 @@ export default function PaginaProyectoZegC() {
         className="pointer-events-none flex w-full min-h-screen justify-center p-8 text-neutral-200 sm:p-16"
       >
         <div className="w-full max-w-4xl">
+
+          <BackButton />
 
           <header className="mb-12 text-center">
             <h1 className="mb-2 bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-5xl font-bold text-transparent sm:text-6xl">

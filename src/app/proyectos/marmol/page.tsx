@@ -1,6 +1,7 @@
 'use client';
 
 import Dither from '@/components/unused/Dither';
+import BackButton from '@/components/BackButton';
 import { FaTerminal, FaPaintBrush, FaTasks, FaShieldAlt } from 'react-icons/fa';
 
 export default function PaginaProyectoMarmol() {
@@ -14,6 +15,8 @@ export default function PaginaProyectoMarmol() {
 
       <main className="flex w-full min-h-screen justify-center p-8 text-neutral-200 sm:p-16">
         <div className="w-full max-w-5xl"> {}
+
+          <BackButton />
 
           <header className="mb-12 text-center">
             <h1 className="mb-2 bg-gradient-to-r from-sky-400 to-cyan-300 bg-clip-text text-5xl font-bold text-transparent sm:text-6xl">

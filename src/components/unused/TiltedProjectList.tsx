@@ -16,7 +16,7 @@ const defaultProjects: Project[] = [
 //  { id: 2, name: ['Robot', 'Humanoide'], href: '#' },
 //  { id: 3, name: ['Robot Sumo'], href: '#' },
   { id: 4, name: ['Marmol'], href: '/proyectos/marmol' },
-  { id: 5, name: ['Telemetria', 'Cohete'], href: '#' },
+  { id: 5, name: ['Telemetria', 'Cohete'], href: '/proyectos/cohete' },
   { id: 6, name: ['Casco Patente'], href: '/proyectos/casco' },
 ];
 

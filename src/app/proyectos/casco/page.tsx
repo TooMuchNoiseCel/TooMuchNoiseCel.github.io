@@ -1,6 +1,7 @@
 'use client';
 
 import Dither from '@/components/unused/Dither';
+import BackButton from '@/components/BackButton';
 import { 
   FaMicrochip, FaSatelliteDish, FaMobileAlt, FaBluetoothB, FaSms, FaExclamationTriangle, FaCode,
   FaGithub, FaFileCode, FaCertificate 
@@ -12,12 +13,14 @@ export default function PaginaProyectoMotoAlert() {
 
   return (
     <>
-      <div className="fixed inset-0 -z-10 h-full w-full">
+      <div className="pointer-events-none fixed inset-0 -z-10 h-full w-full">
         <Dither />
       </div>
 
       <main className="flex w-full min-h-screen justify-center p-6 text-neutral-200 sm:p-12">
         <div className="w-full max-w-6xl">
+
+          <BackButton />
 
           <header className="mb-12 text-center">
             <h1 className="mb-2 bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-5xl font-bold text-transparent sm:text-6xl">

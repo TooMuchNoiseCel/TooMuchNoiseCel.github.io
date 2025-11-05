@@ -23,7 +23,7 @@ const fontUrl = '/fonts/Gentilis_Bold.json';
 
 function Letter({ char, color = 'black' }) {
   return (
-    <Text3D font={fontUrl} size={params.fontSize} height={0.01} curveSegments={12} bevelEnabled bevelThickness={0.01} bevelSize={0.005}>
+    <Text3D font={fontUrl} size={params.fontSize} height={0.01} curveSegments={2} bevelEnabled bevelThickness={0.01} bevelSize={0.005}>
       {char}
       <meshStandardMaterial color={color} />
     </Text3D>
@@ -138,7 +138,7 @@ function Loader() {
 
 export default function TextRing() {
   return (
-    <Canvas camera={{ position: [0, 0, 2.6], fov: 45 }} style={{ background: '#FFF' }}>
+    <Canvas camera={{ position: [0, 0, 2.6], fov: 45 }} style={{ background: '#FFF0' }}>
       <ambientLight intensity={1.5} />
       <pointLight position={[10, 10, 10]} intensity={0.5} />
       <Suspense fallback={<Loader />}>

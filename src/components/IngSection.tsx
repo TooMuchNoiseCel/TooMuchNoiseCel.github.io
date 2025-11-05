@@ -56,7 +56,10 @@ const IngenieriaSection = () => {
             <p className="text-lg md:text-xl leading-relaxed text-justify">
               {text2}
             </p>
+
+            <div className="relative w-full h-96 md:h-[500px] mt-8 -mb-12 md:-mb-24">
               <TextRing/>
+            </div>
           </ScrollReveal>
         </div>
       </section>

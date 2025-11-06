@@ -15,8 +15,7 @@ export default function PaginaProyectoZegC() {
       </div>
 
       <main 
-        // <-- CAMBIO CLAVE: El contenedor principal ignora los eventos del mouse
-        className="pointer-events-none flex w-full min-h-screen justify-center p-8 text-neutral-200 sm:p-16"
+        className=" flex w-full min-h-screen justify-center p-8 text-neutral-200 sm:p-16"
       >
         <div className="w-full max-w-4xl">
 

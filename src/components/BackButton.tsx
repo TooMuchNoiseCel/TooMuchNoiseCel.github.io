@@ -8,13 +8,18 @@ export default function BackButton() {
     <div className="mb-8">
       <Link
         href="/proyectos"
-        className="group inline-flex items-center gap-3 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-400
-                   transition-all duration-300
-                   hover:border-sky-500/80 hover:bg-sky-500/10 hover:text-sky-400
-                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+        className="relative z-20  group inline-flex items-center gap-2 text-sm font-medium text-neutral-400
+                   transition-colors duration-300
+                   hover:text-white
+                   focus-visible:text-white focus-visible:outline-none"
       >
         <FaArrowLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
-        <span>Volver a todos los proyectos</span>
+        <span className="bg-gradient-to-r from-sky-500 to-sky-500 
+                         bg-[length:0%_2px] bg-left-bottom bg-no-repeat
+                         transition-[background-size] duration-300 
+                         group-hover:bg-[length:100%_2px]">
+          Volver
+        </span>
       </Link>
     </div>
   );

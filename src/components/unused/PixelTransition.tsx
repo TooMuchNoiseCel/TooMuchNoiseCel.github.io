@@ -1,180 +1,145 @@
-// src/components/PixelTransition.tsx
-"use client";
-
-import React, {
-  CSSProperties,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import React, { useRef, useLayoutEffect, useState, CSSProperties } from 'react';
+import { gsap } from 'gsap';
 
 interface PixelTransitionProps {
-  firstContent: React.ReactNode;
-  secondContent: React.ReactNode;
+  children: React.ReactNode;
   gridSize?: number;
   pixelColor?: string;
   animationStepDuration?: number;
-  activeBg?: string;
   className?: string;
   style?: CSSProperties;
+  forceActive: boolean;
 }
 
 const PixelTransition: React.FC<PixelTransitionProps> = ({
-  firstContent,
-  secondContent,
-  gridSize = 12,
-  pixelColor = "currentColor",
+  children,
+  gridSize = 5,
+  pixelColor = '#222',
   animationStepDuration = 0.4,
-  activeBg = "#ffffff",
-  className = "",
+  className = '',
   style = {},
+  forceActive,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pixelGridRef = useRef<HTMLDivElement | null>(null);
-  const activeContentRef = useRef<HTMLDivElement | null>(null);
-  const tlRef = useRef<gsap.core.Timeline | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const animationRef = useRef<gsap.core.Timeline | null>(null);
 
-  const [isActive, setIsActive] = useState<boolean>(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkDevice = () => setIsMobile(window.innerWidth < 768);
-    checkDevice();
-    window.addEventListener("resize", checkDevice);
-    return () => window.removeEventListener("resize", checkDevice);
+  useLayoutEffect(() => {
+    gsap.set(containerRef.current, { visibility: 'hidden' });
   }, []);
 
-  // Crea la grilla de píxeles
-  useEffect(() => {
-    const grid = pixelGridRef.current;
-    if (!grid) return;
-    grid.innerHTML = "";
-    const size = 100 / gridSize;
-
-    for (let r = 0; r < gridSize; r++) {
-      for (let c = 0; c < gridSize; c++) {
-        const px = document.createElement("div");
-        px.style.position = "absolute";
-        px.style.left = `${c * size}%`;
-        px.style.top = `${r * size}%`;
-        px.style.width = `${size}%`;
-        px.style.height = `${size}%`;
-        px.style.backgroundColor = pixelColor;
-        px.style.opacity = "0";
-        grid.appendChild(px);
+  useLayoutEffect(() => {
+    const pixelGridEl = pixelGridRef.current;
+    if (!pixelGridEl) return;
+    pixelGridEl.innerHTML = '';
+    for (let row = 0; row < gridSize; row++) {
+      for (let col = 0; col < gridSize; col++) {
+        const pixel = document.createElement('div');
+        pixel.classList.add('pixelated-image-card__pixel', 'absolute');
+        pixel.style.backgroundColor = pixelColor;
+        const size = 100 / gridSize;
+        pixel.style.width = `${size}%`;
+        pixel.style.height = `${size}%`;
+        pixel.style.left = `${col * size}%`;
+        pixel.style.top = `${row * size}%`;
+        pixelGridEl.appendChild(pixel);
       }
     }
   }, [gridSize, pixelColor]);
 
-  const runTransition = useCallback(
-    (activate: boolean) => {
-      const grid = pixelGridRef.current;
-      const activeEl = activeContentRef.current;
-      if (!grid || !activeEl) return;
+  useLayoutEffect(() => {
+    animatePixels(forceActive);
+  }, [forceActive]);
 
-      tlRef.current?.kill();
-      const tiles = Array.from(grid.children) as HTMLElement[];
+  const animatePixels = (activate: boolean): void => {
+    const containerEl = containerRef.current;
+    const contentEl = contentRef.current;
+    const pixels = containerEl?.querySelectorAll<HTMLDivElement>('.pixelated-image-card__pixel');
 
-      // Reset
-      gsap.set(tiles, { opacity: 0 });
-      gsap.set(activeEl, {
-        opacity: activate ? 0 : 1,
-        pointerEvents: activate ? "none" : "auto",
-      });
+    if (!containerEl || !contentEl || !pixels || pixels.length === 0) return;
 
-      const tl = gsap.timeline();
-      tl.to(tiles, {
+    if (animationRef.current) {
+      animationRef.current.kill();
+    }
+
+    const tl = gsap.timeline();
+    animationRef.current = tl;
+
+    const staggerDuration = animationStepDuration / pixels.length;
+
+    if (activate) {
+      gsap.set(containerEl, {
+        visibility: 'visible',
         opacity: 1,
-        duration: animationStepDuration * 0.6,
-        stagger: {
-          each: (animationStepDuration * 0.6) / tiles.length,
-          from: "random",
-        },
-        ease: "none",
+        backgroundColor: 'transparent',
+        borderColor: 'transparent',
       });
-      tl.add(() => {
-        // Cambia el contenido activo cuando los píxeles cubren
-        if (activate) {
-          gsap.set(activeEl, { opacity: 1, pointerEvents: "auto" });
-        } else {
-          gsap.set(activeEl, { opacity: 0, pointerEvents: "none" });
-        }
-        setIsActive(activate);
+      gsap.set(contentEl, { display: 'none' });
+
+      tl.fromTo(pixels, { opacity: 0 }, {
+        opacity: 1,
+        display: 'block',
+        duration: 0,
+        stagger: { each: staggerDuration, from: 'random' }
       });
-      tl.to(tiles, {
+
+      tl.to(containerEl, {
+        backgroundColor: pixelColor,
+        borderColor: 'white',
+        duration: animationStepDuration,
+        ease: 'power2.inOut',
+      }, '>-=0.1');
+      
+      tl.set(contentEl, { display: 'grid' }, '<');
+
+      tl.to(pixels, {
         opacity: 0,
-        duration: animationStepDuration * 0.4,
-        stagger: {
-          each: (animationStepDuration * 0.4) / tiles.length,
-          from: "random",
-        },
-        ease: "none",
+        duration: 0,
+        stagger: { each: staggerDuration, from: 'random' },
+        onComplete: () => {
+          gsap.set(pixels, { display: 'none' });
+        }
+      }, '<');
+
+    } else {
+      tl.to(pixels, {
+        opacity: 1,
+        display: 'block',
+        duration: 0,
+        stagger: { each: staggerDuration, from: 'random' },
       });
 
-      tlRef.current = tl;
-    },
-    [animationStepDuration],
-  );
+      tl.to(containerEl, {
+        backgroundColor: 'transparent',
+        borderColor: 'transparent',
+        duration: animationStepDuration,
+        ease: 'power2.inOut'
+      }, '<');
+      
+      tl.set(contentEl, { display: 'none' }, '<');
 
-  // En mobile, activar por scroll
-  useEffect(() => {
-    if (!isMobile || !containerRef.current) return;
-    const st = ScrollTrigger.create({
-      trigger: containerRef.current,
-      start: "top 75%",
-      onToggle: (self) => {
-        if (self.isActive !== isActive) runTransition(self.isActive);
-      },
-    });
-    return () => st.kill();
-  }, [isMobile, isActive, runTransition]);
+      tl.to(pixels, {
+        opacity: 0,
+        duration: 0,
+        stagger: { each: staggerDuration, from: 'random' },
+        onComplete: () => {
+          gsap.set(containerEl, { visibility: 'hidden' });
+        }
+      }, '>-=0.1');
+    }
+  };
 
   return (
     <div
       ref={containerRef}
-      className={`${className} relative overflow-hidden`}
-      style={style}
-      onMouseEnter={
-        !isMobile ? () => (!isActive ? runTransition(true) : undefined) : undefined
-      }
-      onMouseLeave={
-        !isMobile ? () => (isActive ? runTransition(false) : undefined) : undefined
-      }
+      className={`${className} text-white rounded-[15px] border-2 bg-transparent border-transparent relative overflow-hidden grid`}
+      style={{ ...style, visibility: 'hidden' }}
     >
-      {/* Sizer: define la altura del contenedor según el contenido activo */}
-      <div className="pointer-events-none opacity-0 p-8 md:p-10" aria-hidden="true">
-        <div className={isActive ? "hidden" : "block"}>{firstContent}</div>
-        <div className={isActive ? "block" : "hidden"}>{secondContent}</div>
+      <div ref={contentRef} style={{ gridArea: '1 / 1', display: 'none' }}>
+        {children}
       </div>
-
-      {/* Capa base (contenido inicial) */}
-      <div className="absolute inset-0 z-10 flex flex-col justify-center p-8 md:p-10">
-        {firstContent}
-      </div>
-
-      {/* Capa activa (contenido alternativo) */}
-      <div
-        ref={activeContentRef}
-        className="absolute inset-0 z-20 flex flex-col justify-center p-8 md:p-10 transition-opacity duration-300"
-        style={{
-          opacity: 0,
-          pointerEvents: "none",
-          backgroundColor: activeBg,
-        }}
-      >
-        {secondContent}
-      </div>
-
-      {/* Grilla de píxeles por encima */}
-      <div
-        ref={pixelGridRef}
-        className="pointer-events-none absolute inset-0 z-30"
-      />
+      <div ref={pixelGridRef} className="absolute inset-0 w-full h-full pointer-events-none z-[3]" />
     </div>
   );
 };

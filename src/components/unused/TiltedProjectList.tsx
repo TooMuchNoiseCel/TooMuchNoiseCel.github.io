@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './TiltedProjectList.css';
+import PixelTransition from './PixelTransition';
 
 interface Project {
   id: number;
   name: string[];
   href: string;
+  description: string;
 }
 
 interface TiltedProjectListProps {
@@ -12,27 +14,37 @@ interface TiltedProjectListProps {
 }
 
 const defaultProjects: Project[] = [
-  { id: 1, name: ['Compilador en', 'Zig'], href: '/proyectos/compilador' },
-//  { id: 2, name: ['Robot', 'Humanoide'], href: '#' },
-//  { id: 3, name: ['Robot Sumo'], href: '#' },
-  { id: 4, name: ['Marmol'], href: '/proyectos/marmol' },
-  { id: 5, name: ['Telemetria', 'Cohete'], href: '/proyectos/cohete' },
-  { id: 6, name: ['Casco Patente'], href: '/proyectos/casco' },
+  { id: 1, name: ['Compilador en', 'Zig'], href: '/proyectos/compilador', description: 'Un compilador completo para un subconjunto del lenguaje C, escrito desde cero en Zig.' },
+  //{ id: 2, name: ['Robot', 'Humanoide'], href: '#' },
+  //{ id: 3, name: ['Robot Sumo'], href: '#' },
+  { id: 4, name: ['Marmol'], href: '/proyectos/marmol', description: 'Sistema de visión por computadora para detectar imperfecciones en planchas de mármol en tiempo real.' },
+  { id: 5, name: ['Telemetria', 'Cohete'], href: '/proyectos/cohete', description: 'Placa PCB y software para la recolección y transmisión de datos de telemetría para cohetes amateur.' },
+  { id: 6, name: ['Casco Patente'], href: '/proyectos/casco', description: 'Diseño de un casco de motocicleta con un sistema integrado para leer matrículas de vehículos cercanos.' },
 ];
 
 const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaultProjects }) => {
   const [isIntroActive, setIsIntroActive] = useState(true);
   const introTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const [hoveredProject, setHoveredProject] = useState<Project | null>(null);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+
   useEffect(() => {
     introTimerRef.current = setTimeout(() => {
       setIsIntroActive(false);
-    }, 3000);
+    }, 2000);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setCursorPosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
 
     return () => {
       if (introTimerRef.current) {
         clearTimeout(introTimerRef.current);
       }
+      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
 
@@ -61,7 +73,12 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
           ].join(' ');
 
           return (
-            <li key={project.id} className="group cursor-pointer [transform-style:preserve-3d] font-rubik mb-4">
+            <li 
+              key={project.id} 
+              className="group cursor-pointer [transform-style:preserve-3d] font-rubik mb-4"
+              onMouseEnter={() => setHoveredProject(project)}
+              onMouseLeave={() => setHoveredProject(null)}
+            >
               <div
                 className={containerClasses}
                 style={{ animationDelay: `${staggerDelay}s` }}
@@ -72,7 +89,7 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
                     block relative p-[20px_0] text-transparent uppercase
                     font-rubik text-[8vw] md:text-[8vw] lg:text-[9.6vw]
                     leading-[0.9] tracking-wider whitespace-pre
-                    transition-colors duration-500 group-hover:text-gray-100 // <-- También podemos usar group-hover aquí
+                    transition-colors duration-500 group-hover:text-gray-100
                     text-stroke
 
                     before:content-[attr(data-info)] before:absolute before:top-[3.7em]
@@ -94,6 +111,31 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
           );
         })}
       </ul>
+      
+      <div
+        style={{
+          position: 'fixed',
+          top: cursorPosition.y,
+          left: cursorPosition.x,
+          transform: 'translate(-350px, -20px)',
+          zIndex: 9999,
+          pointerEvents: 'none',
+          transition: 'opacity 0.2s ease-in-out',
+        }}
+      >
+        {hoveredProject && (
+          <PixelTransition
+            forceActive={!!hoveredProject}
+            animationStepDuration={0.5}
+            className="w-[250px]"
+            pixelColor="#222"
+          >
+            <div className="p-4 text-sm font-sans leading-snug">
+              {hoveredProject.description}
+            </div>
+          </PixelTransition>
+        )}
+      </div>
     </div>
   );
 };

@@ -35,7 +35,7 @@ export default function PaginaProyectoMarmol() {
           </header>
 
           <div className="mb-16 rounded-xl bg-neutral-900/50 p-4 shadow-2xl ring-1 ring-white/10">
-            <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-neutral-800">
+            <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-neutral-800">
             <img 
               src="/images/marmol1.png" 
               alt="Captura de pantalla de la aplicación Marmol" 
@@ -58,6 +58,16 @@ export default function PaginaProyectoMarmol() {
                   <li>Multiplataforma (Windows, macOS, Linux).</li>
                 </ul>
               </Section>
+
+          <div className="mb-16 rounded-xl bg-neutral-900/50 p-4 shadow-2xl ring-1 ring-white/10">
+            <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-neutral-800">
+            <img 
+              src="/images/marmol2.png" 
+              alt="Captura de pantalla de la aplicación Marmol" 
+              className="w-full rounded-lg"
+            /> 
+            </div>
+          </div>
               
               <Section title="Roadmap y Futuras Mejoras" icon={<FaPaintBrush />}>
                 <p className="mb-4 text-neutral-400">

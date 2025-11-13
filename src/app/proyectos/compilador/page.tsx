@@ -2,6 +2,7 @@
 
 import Dither from '@/components/unused/Dither';
 import BackButton from '@/components/BackButton';
+import { Pill, Section } from '../page';
 import { FaGithub, FaTerminal, FaWrench } from 'react-icons/fa';
 import Link from 'next/link';
 
@@ -28,25 +29,25 @@ export default function PaginaProyectoZegC() {
             <p className="mb-4 text-2xl font-light text-neutral-300">
               Un Compilador de C escrito en Zig
             </p>
-            <p className="mx-auto mb-6 max-w-2xl text-lg text-neutral-400">
+            <p className="mx-auto mb-6 max-w-2xl text-lg ">
               Un proyecto experimental enfocado en el aprendizaje y la exploración de la construcción de compiladores, desde cero.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <span className="rounded-full bg-orange-500 px-4 py-1 text-sm font-semibold text-black">
+              <Pill className="bg-orange-500 text-black font-semibold">
                 Zig v0.12+
-              </span>
-              <span className="rounded-full bg-gray-400 px-4 py-1 text-sm font-semibold text-black">
+              </Pill>
+              <Pill className="bg-gray-400 text-black font-semibold">
                 Lenguaje C
-              </span>
-              <span className="rounded-full bg-neutral-700 px-4 py-1 text-sm font-semibold text-neutral-200">
+              </Pill>
+              <Pill className="bg-neutral-700 text-neutral-200 font-semibold">
                 🚧 En Desarrollo
-              </span>
+              </Pill>
             </div>
           </header>
 
           <div className="grid grid-cols-1 gap-x-16 md:grid-cols-3">
             <div className="md:col-span-2">
-              <Section title="Características Principales">
+              <Section title="Características Principales" className="border-orange-500/50" iconClassName="text-orange-400">
                 <ul className="list-inside list-disc space-y-2 text-neutral-300">
                   <li>REPL interactivo para pruebas rápidas de declaraciones y expresiones.</li>
                   <li>Análisis léxico para declaraciones de variables (`int x;`) y asignaciones simples (`x = 4;`).</li>
@@ -56,7 +57,7 @@ export default function PaginaProyectoZegC() {
                 </ul>
               </Section>
               
-              <Section title="Objetivo del Proyecto">
+              <Section title="Objetivo del Proyecto" className="border-orange-500/50" iconClassName="text-orange-400">
                 <p>
                   El objetivo final de **zeg-C** es implementar un compilador C funcional y minimalista. El proceso abarca desde el análisis léxico y sintáctico hasta el análisis semántico y la generación de código, utilizando Zig por su control de bajo nivel y seguridad.
                 </p>
@@ -64,7 +65,7 @@ export default function PaginaProyectoZegC() {
             </div>
 
             <aside className="md:col-span-1">
-              <Section title={<><FaGithub className="mr-2" /> Repositorio</>}>
+              <Section title={<><FaGithub className="mr-2" /> Repositorio</>} className="border-orange-500/50" iconClassName="text-orange-400">
                 <a 
                   href={GITHUB_URL}
                   target="_blank" 
@@ -76,7 +77,7 @@ export default function PaginaProyectoZegC() {
                 </a>
               </Section>
 
-              <Section title={<><FaTerminal className="mr-2" /> Cómo Probarlo</>}>
+              <Section title={<><FaTerminal className="mr-2" /> Cómo Probarlo</>} className="border-orange-500/50" iconClassName="text-orange-400">
                 <p className="mb-2">Necesitas Zig v0.12+:</p>
                 <CodeBlock text="zig build run" />
                 <p className="my-2">o directamente:</p>
@@ -86,7 +87,7 @@ export default function PaginaProyectoZegC() {
                 </div>
               </Section>
 
-              <Section title={<><FaWrench className="mr-2" /> Próximos Pasos</>}>
+              <Section title={<><FaWrench className="mr-2" /> Próximos Pasos</>} className="border-orange-500/50" iconClassName="text-orange-400">
                 <ul className="list-inside list-disc text-sm text-neutral-300">
                   <li>Implementar parser de expresiones.</li>
                   <li>Construir un AST.</li>
@@ -99,17 +100,6 @@ export default function PaginaProyectoZegC() {
         </div>
       </main>
     </>
-  );
-}
-
-function Section({ title, children }: { title: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <section className="mb-10">
-      <h2 className="mb-4 flex items-center border-b-2 border-orange-500/50 pb-2 text-2xl font-semibold">
-        {title}
-      </h2>
-      <div className="text-neutral-300/90 space-y-4">{children}</div>
-    </section>
   );
 }
 

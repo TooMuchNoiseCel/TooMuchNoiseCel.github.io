@@ -1,5 +1,6 @@
 'use client';
 
+import { Pill, Section } from '../page';
 import Dither from '@/components/unused/Dither';
 import BackButton from '@/components/BackButton';
 import { FaTerminal, FaPaintBrush, FaTasks, FaShieldAlt } from 'react-icons/fa';
@@ -26,24 +27,21 @@ export default function PaginaProyectoMarmol() {
               Una aplicación de escritorio en Rust para la gestión de notas y proyectos en "vaults" seguras.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <Pill color="blue">Licencia MIT</Pill>
-              <Pill color="green">Versión 0.1.0</Pill>
-              <Pill color="orange">Rust 1.70+</Pill>
-              <Pill color="purple">egui + eframe</Pill>
+              <Pill className="bg-sky-500/80 text-sky-50">Licencia MIT</Pill>
+              <Pill className="bg-emerald-500/80 text-emerald-50">Versión 0.1.0</Pill>
+              <Pill className="bg-orange-500/80 text-orange-50">Rust 1.70+</Pill>
+              <Pill className="bg-emerald-500/80 text-emerald-50">egui + eframe</Pill>
             </div>
           </header>
 
           <div className="mb-16 rounded-xl bg-neutral-900/50 p-4 shadow-2xl ring-1 ring-white/10">
             <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-neutral-800">
-              <span className="text-neutral-500">Aquí va una captura o video de la aplicación</span>
-            </div>
-            {/* Ejemplo con <img>:
             <img 
-              src="/images/marmol-screenshot.png" 
+              src="/images/marmol1.png" 
               alt="Captura de pantalla de la aplicación Marmol" 
               className="w-full rounded-lg"
             /> 
-            */}
+            </div>
           </div>
           
           <div className="grid grid-cols-1 gap-x-16 lg:grid-cols-3">
@@ -83,11 +81,6 @@ export default function PaginaProyectoMarmol() {
             </div>
 
             <aside className="lg:col-span-1">
-              <Section title="Uso" icon={<FaTerminal />}>
-                <p className="mb-2">Compila y ejecuta la versión optimizada con:</p>
-                <CodeBlock text="cargo run --release" />
-              </Section>
-              
               <Section title="Licencia" icon={<FaShieldAlt />}>
                 <p>
                   Este proyecto está distribuido bajo la licencia MIT. Puedes ver los detalles completos en el repositorio.
@@ -110,31 +103,7 @@ export default function PaginaProyectoMarmol() {
 }
 
 
-function Pill({ children, color }: { children: React.ReactNode; color: 'blue' | 'green' | 'orange' | 'purple' }) {
-  const colors = {
-    blue:   'bg-sky-500/80 text-sky-50',
-    green:  'bg-emerald-500/80 text-emerald-50',
-    orange: 'bg-orange-500/80 text-orange-50',
-    purple: 'bg-violet-500/80 text-violet-50',
-  };
-  return (
-    <span className={`rounded-full px-4 py-1 text-sm font-medium ${colors[color]}`}>
-      {children}
-    </span>
-  );
-}
 
-function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <section className="mb-10">
-      <h2 className="mb-4 flex items-center border-b-2 border-sky-500/30 pb-2 text-2xl font-semibold">
-        <span className="mr-3 text-sky-400">{icon}</span>
-        {title}
-      </h2>
-      <div className="space-y-4 text-neutral-300/90">{children}</div>
-    </section>
-  );
-}
 
 function TodoItem({ children }: { children: React.ReactNode }) {
   return <div className="flex items-center text-neutral-400">{children}</div>;

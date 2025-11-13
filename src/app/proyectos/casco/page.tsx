@@ -2,6 +2,7 @@
 
 import Dither from '@/components/unused/Dither';
 import BackButton from '@/components/BackButton';
+import { Pill, Section } from '../page';
 import { 
   FaMicrochip, FaSatelliteDish, FaMobileAlt, FaBluetoothB, FaSms, FaExclamationTriangle, FaCode,
   FaGithub, FaFileCode, FaCertificate 
@@ -23,22 +24,22 @@ export default function PaginaProyectoMotoAlert() {
           <BackButton />
 
           <header className="mb-12 text-center">
-            <h1 className="mb-2 bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-5xl font-bold text-transparent sm:text-6xl">
+            <h1 className="mb-2 bg-gradient-to-r from-purple-400 to-violet-500 bg-clip-text text-5xl font-bold text-transparent sm:text-6xl">
               🏍️ MotoAlert
             </h1>
             <p className="mx-auto mb-6 max-w-3xl text-xl text-neutral-300">
               Sistema IoT de detección de caídas para motociclistas con alertas por BLE y SMS.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <Pill color="blue">Licencia MIT</Pill>
-              <Pill color="green">Versión 1.0.0</Pill>
-              <Pill color="orange">ESP32 (C++)</Pill>
-              <Pill color="cyan">Flutter (Dart)</Pill>
+              <Pill className="bg-sky-500/80 text-sky-50">Licencia MIT</Pill>
+              <Pill className="bg-emerald-500/80 text-emerald-50">Versión 1.0.0</Pill>
+              <Pill className="bg-orange-500/80 text-orange-50">ESP32 (C++)</Pill>
+              <Pill className="bg-cyan-500/80 text-cyan-50">Flutter (Dart)</Pill>
             </div>
           </header>
 
-          <div className="mx-auto mb-16 max-w-4xl rounded-xl border border-amber-500/50 bg-amber-500/10 p-6 text-center shadow-lg">
-            <h2 className="mb-2 flex items-center justify-center text-2xl font-semibold text-amber-300">
+          <div className="mx-auto mb-16 max-w-4xl rounded-xl border border-purple-500/50 bg-purple-500/10 p-6 text-center shadow-lg">
+            <h2 className="mb-2 flex items-center justify-center text-2xl font-semibold text-purple-300">
               <FaCertificate className="mr-3" />
               Base para Solicitud de Patente
             </h2>
@@ -55,7 +56,7 @@ export default function PaginaProyectoMotoAlert() {
             </div>
           </div>
           
-          <Section title="¿Cómo Funciona el Sistema?" icon={<FaCode />}>
+          <Section title="¿Cómo Funciona el Sistema?" icon={<FaCode />} className="border-purple-500/30" iconClassName="text-purple-400">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <FlowStep icon={<FaMicrochip />} title="1. Detección en el Casco">
                 El MPU6050 detecta un impacto (+4.5G) y el GPS confirma movimiento (+15km/h). El ESP32 activa una PRE-ALERTA.
@@ -72,7 +73,7 @@ export default function PaginaProyectoMotoAlert() {
           <div className="grid grid-cols-1 gap-x-12 lg:grid-cols-2">
             
             <div>
-              <Section title="El Dispositivo (Firmware ESP32)" icon={<FaMicrochip />}>
+              <Section title="El Dispositivo (Firmware ESP32)" icon={<FaMicrochip />} className="border-purple-500/30" iconClassName="text-purple-400">
                 <div className="space-y-4">
                   <p>El cerebro del sistema. Un firmware en C++ para ESP32 que monitorea sensores y gestiona las alertas.</p>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -81,14 +82,14 @@ export default function PaginaProyectoMotoAlert() {
                     <HardwareCard icon={<FaSms />} name="SIM800L (Opcional)" desc="Envía SMS de emergencia." />
                     <HardwareCard icon={<FaBluetoothB />} name="Bluetooth LE" desc="Comunica estado y datos a la app." />
                   </div>
-                  <h3 className="pt-4 text-lg font-semibold text-amber-300">Conexiones Principales (GPIO)</h3>
+                  <h3 className="pt-4 text-lg font-semibold text-purple-300">Conexiones Principales (GPIO)</h3>
                   <PinoutTable />
                 </div>
               </Section>
             </div>
 
             <div>
-              <Section title="La Aplicación Móvil (Flutter)" icon={<FaMobileAlt />}>
+              <Section title="La Aplicación Móvil (Flutter)" icon={<FaMobileAlt />} className="border-purple-500/30" iconClassName="text-purple-400">
                 <div className="space-y-4">
                   <p>Una app para Android/iOS que sirve como dashboard en tiempo real y centro de alertas para el conductor.</p>
                   <ul className="list-inside list-disc space-y-2">
@@ -98,12 +99,12 @@ export default function PaginaProyectoMotoAlert() {
                     <li>Alerta visual y sonora en caso de caída confirmada.</li>
                     <li>Gestión de permisos de Bluetooth y ubicación.</li>
                   </ul>
-                  <h3 className="pt-4 text-lg font-semibold text-amber-300">Tecnologías Utilizadas</h3>
+                  <h3 className="pt-4 text-lg font-semibold text-purple-300">Tecnologías Utilizadas</h3>
                   <div className="flex flex-wrap gap-2">
-                    <Pill color="cyan">Flutter</Pill>
-                    <Pill color="blue">flutter_blue_plus</Pill>
-                    <Pill color="green">fl_chart</Pill>
-                    <Pill color="purple">shared_preferences</Pill>
+                    <Pill className="bg-cyan-500/80 text-cyan-50">Flutter</Pill>
+                    <Pill className="bg-sky-500/80 text-sky-50">flutter_blue_plus</Pill>
+                    <Pill className="bg-emerald-500/80 text-emerald-50">fl_chart</Pill>
+                    <Pill className="bg-violet-500/80 text-violet-50">shared_preferences</Pill>
                   </div>
                 </div>
               </Section>
@@ -124,28 +125,9 @@ export default function PaginaProyectoMotoAlert() {
   );
 }
 
-
-const Section = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => (
-  <section className="mb-12">
-    <h2 className="mb-6 flex items-center border-b-2 border-amber-500/30 pb-3 text-3xl font-semibold">
-      <span className="mr-4 text-amber-400">{icon}</span> {title}
-    </h2>
-    <div className="space-y-4 text-neutral-300/90">{children}</div>
-  </section>
-);
-
-const Pill = ({ children, color }: { children: React.ReactNode; color: 'blue' | 'green' | 'orange' | 'cyan' | 'purple' }) => {
-  const colors = {
-    blue:   'bg-sky-500/80 text-sky-50', green: 'bg-emerald-500/80 text-emerald-50',
-    orange: 'bg-orange-500/80 text-orange-50', cyan: 'bg-cyan-500/80 text-cyan-50',
-    purple: 'bg-violet-500/80 text-violet-50',
-  };
-  return <span className={`rounded-full px-4 py-1.5 text-sm font-medium ${colors[color]}`}>{children}</span>;
-};
-
 const FlowStep = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode; }) => (
   <div className="rounded-lg bg-neutral-800/50 p-4 ring-1 ring-neutral-700">
-    <div className="mb-2 flex items-center text-xl font-bold text-amber-400">
+    <div className="mb-2 flex items-center text-xl font-bold text-purple-400">
       <span className="mr-3">{icon}</span>{title}
     </div>
     <p className="text-sm text-neutral-400">{children}</p>
@@ -154,7 +136,7 @@ const FlowStep = ({ icon, title, children }: { icon: React.ReactNode; title: str
 
 const HardwareCard = ({ icon, name, desc }: { icon: React.ReactNode; name: string; desc: string; }) => (
   <div className="flex items-center rounded-lg bg-neutral-800/50 p-3 ring-1 ring-neutral-700">
-    <span className="mr-4 text-2xl text-amber-400">{icon}</span>
+    <span className="mr-4 text-2xl text-purple-400">{icon}</span>
     <div>
       <h4 className="font-semibold text-neutral-200">{name}</h4>
       <p className="text-xs text-neutral-400">{desc}</p>
@@ -181,7 +163,7 @@ const PinoutTable = () => (
 
 const RepoButton = ({ href, icon, children }: { href: string; icon: React.ReactNode; children: React.ReactNode; }) => (
   <a href={href} target="_blank" rel="noopener noreferrer"
-    className="inline-flex items-center justify-center gap-3 rounded-lg bg-neutral-200 px-8 py-3 font-semibold text-black transition-transform duration-200 hover:scale-105 hover:bg-amber-400">
+    className="inline-flex items-center justify-center gap-3 rounded-lg bg-neutral-200 px-8 py-3 font-semibold text-black transition-transform duration-200 hover:scale-105 hover:bg-purple-400">
     <FaGithub className="text-xl" />
     <div className="flex items-center gap-2">
       {icon} <span>{children}</span>

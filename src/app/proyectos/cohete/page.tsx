@@ -2,7 +2,6 @@
 
 import Dither from '@/components/unused/Dither';
 import BackButton from '@/components/BackButton';
-//import Pill from "@/components/"
 
 import { Pill, Section } from '../page';
 import { 

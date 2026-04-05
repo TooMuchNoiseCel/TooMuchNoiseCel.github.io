@@ -1,4 +1,6 @@
+'use client';
 import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import './TiltedProjectList.css';
 import PixelTransition from './PixelTransition';
 
@@ -23,6 +25,7 @@ const defaultProjects: Project[] = [
 ];
 
 const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaultProjects }) => {
+  const router = useRouter();
   const [isIntroActive, setIsIntroActive] = useState(true);
   const introTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -38,7 +41,10 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
       setCursorPosition({ x: e.clientX, y: e.clientY });
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    const isTouchDevice = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    if (!isTouchDevice) {
+      window.addEventListener('mousemove', handleMouseMove);
+    }
 
     return () => {
       if (introTimerRef.current) {
@@ -53,8 +59,8 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
   return (
     <div
       className={`
-        flex items-center justify-end w-full min-h-screen p-[5vw_0]
-        bg-gray-900 overflow-hidden [perspective:1000px]
+        flex items-center justify-end w-full min-h-screen p-[10vh_0]
+        bg-black overflow-hidden [perspective:1000px]
         font-rubik
       `}
     >
@@ -66,7 +72,7 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
             'transition-transform duration-[1200ms] ease-[cubic-bezier(0.075,0.82,0.165,1)]',
             'group-hover:rotate-y-0',
             'origin-right',
-            '-rotate-y-45',
+            'md:-rotate-y-45 rotate-y-[-15deg]',
             'will-change-transform',
             'kitty',
             isIntroActive ? 'intro-initial-state animate-intro-project' : ''
@@ -75,9 +81,10 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
           return (
             <li 
               key={project.id} 
-              className="group cursor-pointer [transform-style:preserve-3d] font-rubik mb-4"
+              className="group cursor-pointer [transform-style:preserve-3d] font-rubik mb-8 md:mb-4"
               onMouseEnter={() => setHoveredProject(project)}
               onMouseLeave={() => setHoveredProject(null)}
+              onClick={() => router.push(project.href)}
             >
               <div
                 className={containerClasses}
@@ -85,34 +92,34 @@ const TiltedProjectList: React.FC<TiltedProjectListProps> = ({ projects = defaul
               >
                 <a
                   href={project.href}
+                  onClick={(e) => e.preventDefault()}
                   className={`
-                    block relative p-[20px_0] text-transparent uppercase
-                    font-rubik text-[8vw] md:text-[8vw] lg:text-[9.6vw]
+                    block relative p-[10px_0] md:p-[20px_0] text-transparent uppercase
+                    font-rubik text-[10vw] md:text-[8vw] lg:text-[9.6vw]
                     leading-[0.9] tracking-wider whitespace-pre
                     transition-colors duration-500 group-hover:text-gray-100
                     text-stroke
 
-                    before:content-[attr(data-info)] before:absolute before:top-[3.7em]
-                    before:left-[-200px] before:w-[180px] before:text-right
-                    before:text-[0.7vw] before:font-rubik before:tracking-normal
-                    before:leading-tight before:text-gray-100 before:pointer-events-none
-
-                    after:content-[''] after:absolute after:top-[0.23em]
-                    after:left-[-0.3em] after:w-[2px] after:h-[0.85em]
-                    after:bg-gray-100 after:rotate-25 after:pointer-events-none
-
-                    md:before:block md:after:block before:hidden after:hidden
+                    md:after:content-[''] md:after:absolute md:after:top-[0.23em]
+                    md:after:left-[-0.3em] md:after:w-[2px] md:after:h-[0.85em]
+                    md:after:bg-gray-100 md:after:rotate-25 md:after:pointer-events-none
                   `}
                 >
                   {project.name.join('\n')}
                 </a>
+                {/* Mobile description */}
+                <div className="md:hidden block text-neutral-400 text-xs mt-2 max-w-[80%] ml-auto font-sans normal-case tracking-normal">
+                    {project.description}
+                </div>
               </div>
             </li>
           );
         })}
       </ul>
       
+      {/* Desktop hovered description */}
       <div
+        className="hidden md:block"
         style={{
           position: 'fixed',
           top: cursorPosition.y,

@@ -1,8 +1,8 @@
 'use client';
 
 import { Pill, Section } from '../page';
-import Dither from '@/components/unused/Dither';
 import BackButton from '@/components/BackButton';
+import ZoomableImage from '@/components/ZoomableImage';
 import { FaTerminal, FaPaintBrush, FaTasks, FaShieldAlt } from 'react-icons/fa';
 
 export default function PaginaProyectoMarmol() {
@@ -10,9 +10,10 @@ export default function PaginaProyectoMarmol() {
 
   return (
     <>
-      <div className="fixed inset-0 -z-10 h-full w-full">
-        <Dither />
-      </div>
+      <div
+        className="fixed inset-0 -z-10 h-full w-full"
+        style={{ backgroundImage: 'url(/fondo.svg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      />
 
       <main className="flex w-full min-h-screen justify-center p-8 text-neutral-200 sm:p-16">
         <div className="w-full max-w-5xl"> {}
@@ -36,7 +37,7 @@ export default function PaginaProyectoMarmol() {
 
           <div className="mb-16 rounded-xl bg-neutral-900/50 p-4 shadow-2xl ring-1 ring-white/10">
             <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-neutral-800">
-            <img 
+            <ZoomableImage 
               src="/images/marmol1.png" 
               alt="Captura de pantalla de la aplicación Marmol" 
               className="w-full rounded-lg"
@@ -61,7 +62,7 @@ export default function PaginaProyectoMarmol() {
 
           <div className="mb-16 rounded-xl bg-neutral-900/50 p-4 shadow-2xl ring-1 ring-white/10">
             <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-neutral-800">
-            <img 
+            <ZoomableImage 
               src="/images/marmol2.png" 
               alt="Captura de pantalla de la aplicación Marmol" 
               className="w-full rounded-lg"

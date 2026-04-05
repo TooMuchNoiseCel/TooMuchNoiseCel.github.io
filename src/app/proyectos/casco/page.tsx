@@ -1,6 +1,5 @@
 'use client';
 
-import Dither from '@/components/unused/Dither';
 import BackButton from '@/components/BackButton';
 import { Pill, Section } from '../page';
 import { 
@@ -14,9 +13,10 @@ export default function PaginaProyectoMotoAlert() {
 
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 -z-10 h-full w-full">
-        <Dither />
-      </div>
+      <div
+        className="pointer-events-none fixed inset-0 -z-10 h-full w-full"
+        style={{ backgroundImage: 'url(/fondo.svg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      />
 
       <main className="flex w-full min-h-screen justify-center p-6 text-neutral-200 sm:p-12">
         <div className="w-full max-w-6xl">

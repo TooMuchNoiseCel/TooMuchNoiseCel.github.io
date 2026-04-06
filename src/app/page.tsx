@@ -1,9 +1,14 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import VoroniCell from '@/components/VoronoiCell';
-import Mascara from '@/components/VoronoiProyects';
 import PublicacionesSection from '@/components/PublicacionesSection';
+
+// Dynamically import the Mascara component with SSR disabled
+const Mascara = dynamic(() => import('@/components/VoronoiProyects'), {
+  ssr: false,
+});
 
 export default function Home() {
   const listaElementos = [

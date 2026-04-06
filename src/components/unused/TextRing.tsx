@@ -84,8 +84,11 @@ function RingOfLetters() {
   useFrame((state, delta) => {
     if (!groupRef.current?.children.length) return;
     const { camera, pointer } = state;
+    
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const movementFactor = isMobile ? 0.1 : 0.5;
 
-    targetCameraPosition.set(initialCameraPosition.x + pointer.x * 0.5, initialCameraPosition.y + pointer.y * 0.5, initialCameraPosition.z);
+    targetCameraPosition.set(initialCameraPosition.x + pointer.x * movementFactor, initialCameraPosition.y + pointer.y * movementFactor, initialCameraPosition.z);
     camera.position.lerp(targetCameraPosition, 3 * delta);
     camera.lookAt(0, 0, 0);
 

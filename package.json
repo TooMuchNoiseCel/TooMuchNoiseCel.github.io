@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chenglou/pretext": "^0.0.2",
+    "@hashintel/refractive": "^0.0.3",
     "@react-three/drei": "^10.6.1",
     "@react-three/fiber": "^9.3.0",
     "@react-three/postprocessing": "^3.0.4",
@@ -18,6 +20,7 @@
     "@types/p5": "^1.7.6",
     "framer-motion": "^12.23.12",
     "gsap": "^3.13.0",
+    "konva": "^10.2.3",
     "next": "^15.4.5",
     "p5": "^2.0.3",
     "postprocessing": "^6.37.6",

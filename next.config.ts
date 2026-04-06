@@ -5,10 +5,11 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
- typescript: {
+  transpilePackages: ['@chenglou/pretext'],
+  typescript: {
     ignoreBuildErrors: true,
   },
-eslint: {
+  eslint: {
     ignoreDuringBuilds: true,
   },
 };

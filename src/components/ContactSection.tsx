@@ -50,7 +50,7 @@ const ContactSection = () => {
           </form>
         </div>
 
-        <div className="w-full" style={{ height: '200px', position: 'relative' }}>
+        <div className="w-full mt-12" style={{ height: '30vh', minHeight: '200px', position: 'relative' }}>
           <FlowingMenu items={demoItems} />
         </div>
 

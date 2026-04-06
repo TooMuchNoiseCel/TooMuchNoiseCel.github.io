@@ -5,8 +5,15 @@ import React, { useEffect, useRef, useState } from "react";
 const CursorFollower = () => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [isHovering, setIsHovering] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isTouchDevice) {
+      setIsVisible(false);
+      return;
+    }
+
     document.body.style.cursor = 'none';
     let raf = 0;
     let x = -1;
@@ -51,6 +58,8 @@ const CursorFollower = () => {
       document.removeEventListener("mouseout", onMouseOut);
     };
   }, []);
+
+  if (!isVisible) return null;
 
   return (
     <div

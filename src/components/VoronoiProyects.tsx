@@ -2,6 +2,8 @@
 
 import React, { useRef, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Stage, Layer, Path, Rect } from 'react-konva';
+import Link from 'next/link';
+import { refractive } from '@hashintel/refractive';
 
 type Punto = { x: number; y: number };
 type Vector = { u: number; v: number };
@@ -132,6 +134,7 @@ function generarPathSuave(puntos: Punto[], radio: number, offsetX: number = 0, o
 export default function Mascara({ elementos }: Props) {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [semillas, setSemillas] = useState<Punto[]>([]);
+  const [isVisible, setIsVisible] = useState(false);
 
   const [layout, setLayout] = useState<{
     polys: Punto[][],
@@ -150,11 +153,21 @@ export default function Mascara({ elementos }: Props) {
       if (containerRef.current) {
         const { clientWidth, clientHeight } = containerRef.current;
         setDimensions({ width: clientWidth, height: clientHeight });
+        
+        const isMobile = clientWidth < 768;
         if (semillas.length === 0 && elementos.length > 0) {
-          setSemillas(elementos.map(() => ({
-            x: Math.random() * clientWidth,
-            y: Math.random() * clientHeight
-          })));
+          if (isMobile) {
+            // Vertical distribution for mobile
+            setSemillas(elementos.map((_, i) => ({
+              x: clientWidth / 2 + (Math.random() - 0.5) * 20,
+              y: (clientHeight / elementos.length) * (i + 0.5)
+            })));
+          } else {
+            setSemillas(elementos.map(() => ({
+              x: Math.random() * clientWidth,
+              y: Math.random() * clientHeight
+            })));
+          }
         }
       }
     };
@@ -196,15 +209,47 @@ export default function Mascara({ elementos }: Props) {
     requestRef.current = requestAnimationFrame(animate);
   }, [dimensions]);
 
+  // Only start animation when visible
   useEffect(() => {
-    if (dimensions.width > 0 && elementos.length > 0) {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (isVisible && dimensions.width > 0 && elementos.length > 0) {
       requestRef.current = requestAnimationFrame(animate);
     }
     return () => cancelAnimationFrame(requestRef.current!);
-  }, [animate, dimensions, elementos]);
+  }, [animate, dimensions, elementos, isVisible]);
 
   return (
     <div ref={containerRef} className="relative w-full h-screen overflow-hidden bg-gray-50">
+
+      {/* Pill link at top */}
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 group">
+        <refractive.div
+          refraction={{ radius: 28, blur: 4, bezelWidth: 8 }}
+          className="rounded-full transition-all duration-300 ease-out
+                     group-hover:scale-105 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+        >
+          <Link
+            href="/proyectos"
+            className="inline-block px-10 py-4 text-lg font-semibold tracking-wider uppercase
+                       bg-white/10 rounded-full
+                       group-hover:bg-white/25 transition-all duration-300
+                       no-underline text-neutral-800 group-hover:text-neutral-900
+                       group-hover:tracking-[0.15em]"
+          >
+            Ver Todos los Proyectos →
+          </Link>
+        </refractive.div>
+      </div>
 
       <Stage width={dimensions.width} height={dimensions.height} className="absolute inset-0 z-0 pointer-events-none">
         <Layer>
@@ -213,8 +258,8 @@ export default function Mascara({ elementos }: Props) {
             <Path
               key={i}
               data={generarPathSuave(poly, 30)}
-              fill="white" // Relleno blanco de fondo
-              stroke="#e2e8f0" // Color del borde
+              fill="white"
+              stroke="#e2e8f0"
               strokeWidth={3}
               shadowBlur={15}
               shadowColor="rgba(0,0,0,0.1)"

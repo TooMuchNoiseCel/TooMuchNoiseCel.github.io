@@ -3,10 +3,11 @@
 import React, { useRef, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Stage, Layer, Path, Rect } from 'react-konva';
 import Link from 'next/link';
-import { refractive } from '@hashintel/refractive';
 
 type Punto = { x: number; y: number };
 type Vector = { u: number; v: number };
+type Caja = { x: number; y: number; width: number; height: number };
+type NodoPath = React.ComponentRef<typeof Path>;
 
 interface Props {
   elementos: ReactNode[];
@@ -131,22 +132,43 @@ function generarPathSuave(puntos: Punto[], radio: number, offsetX: number = 0, o
   return path;
 }
 
+const FPS = 30;
+const FRAME_INTERVAL = 1000 / FPS;
+const UMBRAL_CONVERGENCIA = 0.1;
+const MAX_ITERACIONES = 200;
+
 export default function Mascara({ elementos }: Props) {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [semillas, setSemillas] = useState<Punto[]>([]);
   const [isVisible, setIsVisible] = useState(false);
 
-  const [layout, setLayout] = useState<{
-    polys: Punto[][],
-    centroides: Punto[],
-    bounds: { x: number, y: number, width: number, height: number }[],
-    paths: string[]
-  }>({
-    polys: [], centroides: [], bounds: [], paths: []
-  });
-
-  const requestRef = useRef<number>();
+  const requestRef = useRef<number | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
+  const semillasRef = useRef<Punto[]>([]);
+  const convergedRef = useRef(false);
+  const lastFrameRef = useRef(0);
+  const iteracionRef = useRef(0);
+
+  const pathRefs = useRef<(NodoPath | null)[]>([]);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const boundsRef = useRef<Caja[]>([]);
+  const pathsRef = useRef<string[]>([]);
+
+  const aplicarEstilosTarjeta = useCallback((i: number, node: HTMLDivElement | null) => {
+    cardRefs.current[i] = node;
+    if (!node) return;
+    const box = boundsRef.current[i];
+    const path = pathsRef.current[i];
+    if (!box || !path) {
+      node.style.width = '0px';
+      node.style.height = '0px';
+      return;
+    }
+    node.style.width = `${box.width}px`;
+    node.style.height = `${box.height}px`;
+    node.style.transform = `translate3d(${box.x}px, ${box.y}px, 0)`;
+    node.style.clipPath = `path('${path}')`;
+    node.style.setProperty('-webkit-clip-path', `path('${path}')`);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -155,20 +177,25 @@ export default function Mascara({ elementos }: Props) {
         setDimensions({ width: clientWidth, height: clientHeight });
         
         const isMobile = clientWidth < 768;
-        if (semillas.length === 0 && elementos.length > 0) {
+        if (semillasRef.current.length === 0 && elementos.length > 0) {
           if (isMobile) {
             // Vertical distribution for mobile
-            setSemillas(elementos.map((_, i) => ({
+            semillasRef.current = elementos.map((_, i) => ({
               x: clientWidth / 2 + (Math.random() - 0.5) * 20,
               y: (clientHeight / elementos.length) * (i + 0.5)
-            })));
+            }));
           } else {
-            setSemillas(elementos.map(() => ({
+            semillasRef.current = elementos.map(() => ({
               x: Math.random() * clientWidth,
               y: Math.random() * clientHeight
-            })));
+            }));
           }
         }
+
+        // Al cambiar el tamaño hay que volver a relajar el diagrama
+        convergedRef.current = false;
+        lastFrameRef.current = 0;
+        iteracionRef.current = 0;
       }
     };
     handleResize();
@@ -176,38 +203,64 @@ export default function Mascara({ elementos }: Props) {
     return () => window.removeEventListener('resize', handleResize);
   }, [elementos.length]);
 
-  const animate = useCallback(() => {
-    setSemillas(prev => {
-      const { width, height } = dimensions;
-      if (width === 0 || prev.length === 0) return prev;
+  const animate = useCallback((time: number) => {
+    if (time - lastFrameRef.current < FRAME_INTERVAL) {
+      requestRef.current = requestAnimationFrame(animate);
+      return;
+    }
+    lastFrameRef.current = time;
 
-      const celdas = generarCeldasVoronoi(prev, width, height);
-      const centroides = celdas.map(c => calcularCentroide(c));
+    const { width, height } = dimensions;
+    const prev = semillasRef.current;
+    if (width === 0 || prev.length === 0) return;
 
-      const bounds: any[] = [];
-      const paths: string[] = [];
-      const polysFinales: Punto[][] = [];
+    const celdas = generarCeldasVoronoi(prev, width, height);
+    const centroides = celdas.map(c => calcularCentroide(c));
 
-      celdas.forEach(celda => {
-        const polyEncogido = encogerPoligono(celda, 10);
-        polysFinales.push(polyEncogido);
+    const bounds: Caja[] = [];
+    const paths: string[] = [];
 
-        const box = obtenerCaja(polyEncogido);
-        bounds.push(box);
+    celdas.forEach((celda, i) => {
+      const polyEncogido = encogerPoligono(celda, 10);
 
-        const cssPath = generarPathSuave(polyEncogido, 30, box.x, box.y);
-        paths.push(cssPath);
-      });
+      const box = obtenerCaja(polyEncogido);
+      bounds.push(box);
 
-      setLayout({ polys: polysFinales, centroides: centroides, bounds, paths });
+      const cssPath = generarPathSuave(polyEncogido, 30, box.x, box.y);
+      paths.push(cssPath);
 
-      return prev.map((p, i) => ({
-        x: lerp(p.x, centroides[i].x, 0.05),
-        y: lerp(p.y, centroides[i].y, 0.05)
-      }));
+      // Actualización imperativa: sin pasar por el estado de React
+      const pathNode = pathRefs.current[i];
+      if (pathNode) {
+        pathNode.data(cssPath);
+        pathNode.x(box.x);
+        pathNode.y(box.y);
+      }
     });
+
+    boundsRef.current = bounds;
+    pathsRef.current = paths;
+    bounds.forEach((_, i) => aplicarEstilosTarjeta(i, cardRefs.current[i]));
+
+    let maxMove = 0;
+    const nuevas = prev.map((p, i) => {
+      const nx = lerp(p.x, centroides[i].x, 0.05);
+      const ny = lerp(p.y, centroides[i].y, 0.05);
+      maxMove = Math.max(maxMove, Math.hypot(nx - p.x, ny - p.y));
+      return { x: nx, y: ny };
+    });
+    semillasRef.current = nuevas;
+
+    iteracionRef.current += 1;
+
+    // Detenemos la animación al converger o al alcanzar el tope de iteraciones
+    if (maxMove < UMBRAL_CONVERGENCIA || iteracionRef.current >= MAX_ITERACIONES) {
+      convergedRef.current = true;
+      return;
+    }
+
     requestRef.current = requestAnimationFrame(animate);
-  }, [dimensions]);
+  }, [dimensions, aplicarEstilosTarjeta]);
 
   // Only start animation when visible
   useEffect(() => {
@@ -222,87 +275,71 @@ export default function Mascara({ elementos }: Props) {
   }, []);
 
   useEffect(() => {
-    if (isVisible && dimensions.width > 0 && elementos.length > 0) {
+    if (isVisible && dimensions.width > 0 && elementos.length > 0 && !convergedRef.current) {
       requestRef.current = requestAnimationFrame(animate);
     }
-    return () => cancelAnimationFrame(requestRef.current!);
-  }, [animate, dimensions, elementos, isVisible]);
+    return () => {
+      cancelAnimationFrame(requestRef.current!);
+    };
+  }, [animate, dimensions, isVisible, elementos.length]);
 
   return (
     <div ref={containerRef} className="relative w-full h-screen overflow-hidden bg-gray-50">
 
       {/* Pill link at top */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 group">
-        <refractive.div
-          refraction={{ radius: 28, blur: 4, bezelWidth: 8 }}
-          className="rounded-full transition-all duration-300 ease-out
-                     group-hover:scale-105 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+        <Link
+          href="/proyectos"
+          className="inline-flex items-center gap-3 rounded-full px-8 py-4
+                     bg-neutral-900 text-white text-base font-semibold tracking-widest uppercase
+                     no-underline shadow-lg shadow-neutral-900/25 ring-1 ring-white/20
+                     backdrop-blur-sm
+                     transition-all duration-300 ease-out
+                     hover:bg-neutral-800 hover:scale-105 hover:shadow-xl hover:shadow-neutral-900/40"
         >
-          <Link
-            href="/proyectos"
-            className="inline-block px-10 py-4 text-lg font-semibold tracking-wider uppercase
-                       bg-white/10 rounded-full
-                       group-hover:bg-white/25 transition-all duration-300
-                       no-underline text-neutral-800 group-hover:text-neutral-900
-                       group-hover:tracking-[0.15em]"
-          >
-            Ver Todos los Proyectos →
-          </Link>
-        </refractive.div>
+          Ver Todos los Proyectos
+          <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+        </Link>
       </div>
 
       <Stage width={dimensions.width} height={dimensions.height} className="absolute inset-0 z-0 pointer-events-none">
         <Layer>
           <Rect width={dimensions.width} height={dimensions.height} fill="transparent" />
-          {layout.polys.map((poly, i) => (
+          {elementos.map((_, i) => (
             <Path
               key={i}
-              data={generarPathSuave(poly, 30)}
+              ref={(node) => { pathRefs.current[i] = node; }}
               fill="white"
               stroke="#e2e8f0"
               strokeWidth={3}
-              shadowBlur={15}
-              shadowColor="rgba(0,0,0,0.1)"
             />
           ))}
         </Layer>
       </Stage>
 
       <div className="absolute inset-0 z-10 pointer-events-none">
-        {elementos.map((elemento, i) => {
-          const bound = layout.bounds[i] || { x: 0, y: 0, width: 0, height: 0 };
-          const pathString = layout.paths[i] || "";
-
-          return (
-            <div
-              key={i}
-              className="absolute pointer-events-auto"
-              style={{
-                left: 0,
-                top: 0,
-                width: bound.width,
-                height: bound.height,
-                transform: `translate3d(${bound.x}px, ${bound.y}px, 0)`,
-                clipPath: `path('${pathString}')`,
-                WebkitClipPath: `path('${pathString}')`
-              }}
-            >
-              {React.isValidElement(elemento) ? (
-                React.cloneElement(elemento as React.ReactElement, {
-                  style: {
-                    ...((elemento.props as any)?.style || {}),
-                    width: '100%',
-                    height: '100%'
-                  }
-                })
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {elemento}
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {elementos.map((elemento, i) => (
+          <div
+            key={i}
+            ref={(node) => aplicarEstilosTarjeta(i, node)}
+            className="absolute pointer-events-auto"
+            style={{ left: 0, top: 0 }}
+          >
+            {React.isValidElement(elemento) ? (
+              React.cloneElement(elemento as React.ReactElement, {
+                style: {
+                  ...((elemento.props as any)?.style || {}),
+                  width: '100%',
+                  height: '100%'
+                }
+              })
+            ) : (
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {elemento}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

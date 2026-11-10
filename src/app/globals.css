@@ -118,3 +118,32 @@ body {
 .animate-page-in {
   animation: page-in 0.4s ease-out both;
 }
+
+/* Entrada del nombre en el header: solo CSS, sin depender de JS/hidratación. */
+@keyframes header-line-reveal {
+  from {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.reveal-line-content {
+  animation: header-line-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+.reveal-line-content--delayed {
+  animation-delay: 0.175s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-line-content {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
+}

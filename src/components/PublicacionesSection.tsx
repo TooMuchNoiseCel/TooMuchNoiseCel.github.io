@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { FaBook, FaExternalLinkAlt, FaOrcid } from 'react-icons/fa';
+import { useEffect, useRef, useState } from 'react';
+import { FaOrcid } from 'react-icons/fa';
 
 interface Author {
   name: string;
@@ -40,83 +40,87 @@ const publications: Publication[] = [
   },
 ];
 
-const COLORS = {
-  bg: '#0b0d12',
-  fg: '#e5e7eb',
-  accent: '#60a5fa',
-  muted: '#9ca3af',
-  card: 'rgba(255,255,255,0.04)',
-  border: 'rgba(255,255,255,0.08)',
-};
-
 export default function PublicacionesSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setRevealed(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setRevealed(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const revealClass = revealed
+    ? 'opacity-100 translate-y-0'
+    : 'opacity-0 translate-y-6';
+
   return (
     <section
-      className="w-full py-24 px-6"
-      style={{ backgroundColor: COLORS.bg, color: COLORS.fg }}
+      ref={sectionRef}
+      className="w-full bg-[#09090b] px-6 py-36 font-outfit text-neutral-300 sm:px-8 sm:py-44"
     >
-      <div className="max-w-4xl mx-auto font-inter">
-        <motion.h2
-          className="font-outfit text-4xl font-bold mb-12 text-center tracking-tight"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <FaBook className="inline-block mr-3 text-2xl align-middle" style={{ color: COLORS.accent }} />
-          Publicaciones
-        </motion.h2>
+      <div className="mx-auto grid max-w-5xl gap-16 md:grid-cols-[220px_1fr] md:gap-24">
+        <div className={`transition-all duration-700 ease-out motion-reduce:transition-none ${revealClass}`}>
+          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-sky-400/80">
+            Investigación
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            Publicaciones
+          </h2>
+          <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-500">
+            Trabajos académicos y colaboraciones en los que he participado.
+          </p>
+        </div>
 
-        <div className="space-y-8">
+        <div className="border-t border-neutral-800">
           {publications.map((pub, i) => (
-            <motion.article
+            <article
               key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.15, duration: 0.5 }}
-              className="group rounded-2xl p-6 md:p-8 transition-all duration-300
-                         hover:shadow-[0_0_40px_rgba(96,165,250,0.08)]"
-              style={{
-                backgroundColor: COLORS.card,
-                border: `1px solid ${COLORS.border}`,
-              }}
+              className={`border-b border-neutral-800 py-12 transition-all duration-700 ease-out motion-reduce:transition-none motion-reduce:opacity-100 motion-reduce:translate-y-0 sm:py-16 ${revealClass}`}
+              style={{ transitionDelay: `${120 + i * 120}ms` }}
             >
-              {/* Journal badge */}
               {pub.journal && (
-                <span
-                  className="inline-block text-xs font-medium tracking-wider uppercase mb-3 px-3 py-1 rounded-full"
-                  style={{ backgroundColor: 'rgba(96,165,250,0.12)', color: COLORS.accent }}
-                >
+                <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-500">
                   {pub.journal}
-                </span>
+                </p>
               )}
 
-              {/* Title */}
-              <h3 className="text-xl md:text-2xl font-semibold mb-4 leading-snug">
+              <h3 className="text-xl font-medium leading-snug text-white sm:text-2xl">
                 <a
                   href={pub.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:underline decoration-1 underline-offset-4 transition-colors duration-200"
-                  style={{ color: COLORS.fg }}
+                  className="transition-colors hover:text-sky-300"
                 >
                   {pub.title}
-                  <FaExternalLinkAlt
-                    className="inline-block ml-2 text-sm opacity-0 group-hover:opacity-60 transition-opacity duration-300"
-                  />
                 </a>
               </h3>
 
-              {/* Authors */}
-              <div className="space-y-2">
+              <ul className="mt-5 space-y-2 text-sm">
                 {pub.authors.map((author, j) => (
-                  <div key={j} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                    <span style={{ color: COLORS.fg }}>{author.name}</span>
-                    <span
-                      className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: COLORS.muted }}
-                    >
+                  <li
+                    key={j}
+                    className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-neutral-400"
+                  >
+                    <span className="text-neutral-300">{author.name}</span>
+                    <span className="text-neutral-700">·</span>
+                    <span className="text-[11px] uppercase tracking-[0.14em] text-neutral-500">
                       {author.affiliation}
                     </span>
                     {author.orcid && (
@@ -124,32 +128,28 @@ export default function PublicacionesSection() {
                         href={author.orcid}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs transition-colors duration-200 hover:text-green-400"
-                        style={{ color: '#a6ce39' }}
+                        className="inline-flex items-center gap-1 text-[11px] text-[#a6ce39] transition-opacity hover:opacity-75"
                       >
                         <FaOrcid />
                         ORCID
                       </a>
                     )}
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
 
-              {/* Read link */}
-              <div className="mt-5">
+              <div className="mt-7">
                 <a
                   href={pub.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-medium transition-all duration-200
-                             hover:gap-3"
-                  style={{ color: COLORS.accent }}
+                  className="inline-flex items-center gap-2 border-b border-neutral-700 pb-0.5 text-sm text-neutral-300 transition-colors hover:border-neutral-400 hover:text-white"
                 >
                   Leer publicación
-                  <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+                  <span aria-hidden="true">→</span>
                 </a>
               </div>
-            </motion.article>
+            </article>
           ))}
         </div>
       </div>

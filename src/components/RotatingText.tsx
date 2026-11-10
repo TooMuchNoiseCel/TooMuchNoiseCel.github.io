@@ -9,10 +9,10 @@ import React, {
 import {
   motion,
   AnimatePresence,
+  useReducedMotion,
   Transition,
   type VariantLabels,
   type Target,
-  type AnimationControls,
   type TargetAndTransition,
 } from "framer-motion";
 
@@ -35,7 +35,7 @@ export interface RotatingTextProps
   texts: string[];
   transition?: Transition;
   initial?: boolean | Target | VariantLabels;
-  animate?: boolean | VariantLabels | AnimationControls | TargetAndTransition;
+  animate?: boolean | VariantLabels | TargetAndTransition;
   exit?: Target | VariantLabels;
   animatePresenceMode?: "sync" | "wait";
   animatePresenceInitial?: boolean;
@@ -76,6 +76,7 @@ const RotatingText = forwardRef<RotatingTextRef, RotatingTextProps>(
     ref
   ) => {
     const [currentTextIndex, setCurrentTextIndex] = useState<number>(0);
+    const prefersReducedMotion = useReducedMotion();
 
     const splitIntoCharacters = (text: string): string[] => {
       if (typeof Intl !== "undefined" && Intl.Segmenter) {
@@ -199,6 +200,18 @@ const RotatingText = forwardRef<RotatingTextRef, RotatingTextProps>(
       const intervalId = setInterval(next, rotationInterval);
       return () => clearInterval(intervalId);
     }, [next, rotationInterval, auto]);
+
+    // Sin animación para quien prefiere movimiento reducido.
+    if (prefersReducedMotion) {
+      return (
+        <span
+          className={cn("flex flex-wrap whitespace-pre-wrap relative", mainClassName)}
+          {...(rest as React.HTMLAttributes<HTMLSpanElement>)}
+        >
+          {texts[currentTextIndex]}
+        </span>
+      );
+    }
 
     return (
       <motion.span

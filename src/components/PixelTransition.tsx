@@ -60,6 +60,19 @@ const PixelTransition: React.FC<PixelTransitionProps> = ({
 
     if (!containerEl || !contentEl || !pixels || pixels.length === 0) return;
 
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (activate) {
+        gsap.set(containerEl, { visibility: 'visible', opacity: 1, backgroundColor: pixelColor, borderColor: 'white' });
+        gsap.set(contentEl, { display: 'grid' });
+        gsap.set(pixels, { display: 'none' });
+      } else {
+        gsap.set(containerEl, { visibility: 'hidden', backgroundColor: 'transparent', borderColor: 'transparent' });
+        gsap.set(contentEl, { display: 'none' });
+        gsap.set(pixels, { display: 'none' });
+      }
+      return;
+    }
+
     if (animationRef.current) {
       animationRef.current.kill();
     }

@@ -1,4 +1,9 @@
-interface CartaGiratoriaProps {
+'use client';
+
+import { useState } from 'react';
+import { refractive } from '@hashintel/refractive';
+
+interface VoronoiCellProps {
   imageSrc: string;   // URL de la imagen o GIF
   linkUrl: string;    // A dónde lleva el enlace
   linkText: string;   // Texto del botón/enlace
@@ -6,52 +11,84 @@ interface CartaGiratoriaProps {
   altText?: string;
 }
 
-export default function VoroniCell({
+export default function VoronoiCell({
   imageSrc,
   linkUrl,
   linkText,
   title = "Ver más",
   altText = "Imagen de carta"
-}: CartaGiratoriaProps) {
+}: VoronoiCellProps) {
+  const [flipped, setFlipped] = useState(false);
+
   return (
-    <div className="group w-full h-full [perspective:1000px] cursor-pointer">
-
-      <div className="relative w-full h-full transition-all duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] shadow-xl rounded-xl">
-
+    <div
+      className="group relative w-full h-full [perspective:1000px] cursor-pointer"
+      data-interactive="true"
+      onClick={() => setFlipped(value => !value)}
+    >
+      <div
+        className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d]
+                    group-hover:[transform:rotateY(180deg)] group-focus-within:[transform:rotateY(180deg)]
+                    shadow-xl rounded-xl ${flipped ? '[transform:rotateY(180deg)]' : ''}`}
+      >
         <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-xl overflow-hidden">
           <img
             src={imageSrc}
             alt={altText}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/10"></div>
         </div>
 
-        <div className="absolute inset-0 w-full h-full  text-white rounded-xl [transform:rotateY(180deg)] [backface-visibility:hidden] flex flex-col items-center justify-center p-6 text-center shadow-inner">
-
+        <div className="absolute inset-0 w-full h-full rounded-xl overflow-hidden [transform:rotateY(180deg)] [backface-visibility:hidden]">
+          {/* Imagen nítida como fondo; el shader de vidrio la refracta. */}
           <img
             src={imageSrc}
-            alt={altText}
-            className="w-full h-full object-cover absolute blur-md"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover"
           />
+          <div className="absolute inset-0 bg-neutral-950/45" />
 
-          <h3 className="text-2xl font-bold mb-4 relative">{title}</h3>
-
-          <p className="text-sm text-indigo-100 mb-6 relative">
-            Haz click abajo para continuar
-          </p>
-
-          <a
-            href={linkUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className=" relative px-6 py-2 bg-white text-indigo-600 font-semibold rounded-full hover:bg-indigo-50 transition-colors duration-300 shadow-md transform hover:scale-105"
+          <refractive.div
+            className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white
+                       ring-1 ring-inset ring-white/15"
+            style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
+            refraction={{
+              radius: 12,
+              blur: 3,
+              bezelWidth: 16,
+              glassThickness: 60,
+              refractiveIndex: 1.5,
+              specularOpacity: 0.55,
+              specularAngle: -Math.PI / 4,
+            }}
           >
-            {linkText}
-          </a>
+            <h3 className="text-2xl font-bold mb-4">{title}</h3>
 
+            <p className="text-sm text-neutral-300 mb-6">
+              Haz clic abajo para continuar
+            </p>
+
+            <a
+              href={linkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(event) => event.stopPropagation()}
+              className="px-6 py-2 bg-black text-white font-semibold rounded-full border border-white/20
+                         hover:bg-neutral-800 transition-colors duration-300 shadow-md transform hover:scale-105
+                         focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              {linkText}
+            </a>
+          </refractive.div>
         </div>
-
       </div>
     </div>
   );

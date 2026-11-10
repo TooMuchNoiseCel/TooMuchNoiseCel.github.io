@@ -1,26 +1,24 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Stage, Layer, Path, Rect } from 'react-konva';
 import Link from 'next/link';
 
-type Punto = { x: number; y: number };
-type Vector = { u: number; v: number };
-type Caja = { x: number; y: number; width: number; height: number };
-type NodoPath = React.ComponentRef<typeof Path>;
+type Point = { x: number; y: number };
+type Vec = { u: number; v: number };
+type Box = { x: number; y: number; width: number; height: number };
 
 interface Props {
-  elementos: ReactNode[];
+  cells: ReactNode[];
 }
 
 
 const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;
 
-function calcularPuntoMedio(p1: Punto, p2: Punto): Punto {
+function midpointOf(p1: Point, p2: Point): Point {
   return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
 }
 
-function obtenerCaja(puntos: Punto[]) {
+function boundingBox(puntos: Point[]) {
   if (puntos.length === 0) return { x: 0, y: 0, width: 0, height: 0 };
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   puntos.forEach(p => {
@@ -32,14 +30,14 @@ function obtenerCaja(puntos: Punto[]) {
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
-function interseccionLineas(p1: Punto, v1: Vector, p2: Punto, v2: Vector): Punto | null {
+function lineIntersection(p1: Point, v1: Vec, p2: Point, v2: Vec): Point | null {
   const det = v1.u * v2.v - v1.v * v2.u;
   if (Math.abs(det) < 1e-6) return null;
   const t = ((p2.x - p1.x) * v2.v - (p2.y - p1.y) * v2.u) / det;
   return { x: p1.x + t * v1.u, y: p1.y + t * v1.v };
 }
 
-function calcularCentroide(puntos: Punto[]): Punto {
+function centroidOf(puntos: Point[]): Point {
   if (puntos.length === 0) return { x: 0, y: 0 };
   let area = 0, cx = 0, cy = 0;
   for (let i = 0; i < puntos.length; i++) {
@@ -55,16 +53,16 @@ function calcularCentroide(puntos: Punto[]): Punto {
   return { x: cx / (6 * area), y: cy / (6 * area) };
 }
 
-function generarCeldasVoronoi(semillas: Punto[], width: number, height: number): Punto[][] {
+function generateVoronoiCells(seeds: Point[], width: number, height: number): Point[][] {
   const box = [{ x: 0, y: 0 }, { x: width, y: 0 }, { x: width, y: height }, { x: 0, y: height }];
-  return semillas.map((p, i) => {
+  return seeds.map((p, i) => {
     let poly = [...box];
-    for (let j = 0; j < semillas.length; j++) {
+    for (let j = 0; j < seeds.length; j++) {
       if (i === j) continue;
-      const q = semillas[j];
-      const mid = calcularPuntoMedio(p, q);
+      const q = seeds[j];
+      const mid = midpointOf(p, q);
       const normal = { u: p.x - q.x, v: p.y - q.y };
-      const newPoly: Punto[] = [];
+      const newPoly: Point[] = [];
       for (let k = 0; k < poly.length; k++) {
         const curr = poly[k];
         const prev = poly[(k + poly.length - 1) % poly.length];
@@ -73,11 +71,11 @@ function generarCeldasVoronoi(semillas: Punto[], width: number, height: number):
 
         if (isCurrInside && isPrevInside) newPoly.push(curr);
         else if (isCurrInside && !isPrevInside) {
-          const inter = interseccionLineas(prev, { u: curr.x - prev.x, v: curr.y - prev.y }, mid, { u: -normal.v, v: normal.u });
+          const inter = lineIntersection(prev, { u: curr.x - prev.x, v: curr.y - prev.y }, mid, { u: -normal.v, v: normal.u });
           if (inter) newPoly.push(inter);
           newPoly.push(curr);
         } else if (!isCurrInside && isPrevInside) {
-          const inter = interseccionLineas(prev, { u: curr.x - prev.x, v: curr.y - prev.y }, mid, { u: -normal.v, v: normal.u });
+          const inter = lineIntersection(prev, { u: curr.x - prev.x, v: curr.y - prev.y }, mid, { u: -normal.v, v: normal.u });
           if (inter) newPoly.push(inter);
         }
       }
@@ -88,7 +86,7 @@ function generarCeldasVoronoi(semillas: Punto[], width: number, height: number):
   });
 }
 
-function encogerPoligono(puntos: Punto[], pixeles: number): Punto[] {
+function shrinkPolygon(puntos: Point[], pixeles: number): Point[] {
   if (puntos.length === 0) return [];
   let cx = 0, cy = 0;
   puntos.forEach(p => { cx += p.x; cy += p.y; });
@@ -103,7 +101,7 @@ function encogerPoligono(puntos: Punto[], pixeles: number): Punto[] {
   });
 }
 
-function generarPathSuave(puntos: Punto[], radio: number, offsetX: number = 0, offsetY: number = 0): string {
+function smoothPath(puntos: Point[], radio: number, offsetX: number = 0, offsetY: number = 0): string {
   if (puntos.length < 3) return "";
   let path = "";
   for (let i = 0; i < puntos.length; i++) {
@@ -134,26 +132,64 @@ function generarPathSuave(puntos: Punto[], radio: number, offsetX: number = 0, o
 
 const FPS = 30;
 const FRAME_INTERVAL = 1000 / FPS;
-const UMBRAL_CONVERGENCIA = 0.1;
-const MAX_ITERACIONES = 200;
+const UMBRAL_CONVERGENCIA = 0.8;
+const MAX_ITERACIONES = 60;
+const RELAJACION = 0.15;
 
-export default function Mascara({ elementos }: Props) {
+// Secuencia de baja discrepancia (R2): mismo layout en cada carga.
+const R2_X = 0.7548776662466927;
+const R2_Y = 0.5698402909980532;
+
+function deterministicSeeds(cantidad: number, width: number, height: number, isMobile: boolean): Point[] {
+  return Array.from({ length: cantidad }, (_, i) => {
+    if (isMobile) {
+      return { x: width / 2, y: (height / cantidad) * (i + 0.5) };
+    }
+    const fx = ((i + 1) * R2_X) % 1;
+    const fy = ((i + 1) * R2_Y) % 1;
+    return { x: width * (0.12 + 0.76 * fx), y: height * (0.12 + 0.76 * fy) };
+  });
+}
+
+function relaxSeeds(iniciales: Point[], width: number, height: number, iteraciones: number): Point[] {
+  let seeds = iniciales;
+  for (let it = 0; it < iteraciones; it++) {
+    const centroids = generateVoronoiCells(seeds, width, height).map(centroidOf);
+    let maxMove = 0;
+    seeds = seeds.map((p, i) => {
+      const nx = lerp(p.x, centroids[i].x, 0.5);
+      const ny = lerp(p.y, centroids[i].y, 0.5);
+      maxMove = Math.max(maxMove, Math.hypot(nx - p.x, ny - p.y));
+      return { x: nx, y: ny };
+    });
+    if (maxMove < UMBRAL_CONVERGENCIA) break;
+  }
+  return seeds;
+}
+
+function prefersReducedMotion(): boolean {
+  return typeof window !== 'undefined'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+export default function VoronoiProjects({ cells }: Props) {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [isVisible, setIsVisible] = useState(false);
 
   const requestRef = useRef<number | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
-  const semillasRef = useRef<Punto[]>([]);
+  const seedsRef = useRef<Point[]>([]);
   const convergedRef = useRef(false);
   const lastFrameRef = useRef(0);
-  const iteracionRef = useRef(0);
+  const iterationRef = useRef(0);
+  const wasMobileRef = useRef<boolean | null>(null);
 
-  const pathRefs = useRef<(NodoPath | null)[]>([]);
+  const pathRefs = useRef<(SVGPathElement | null)[]>([]);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const boundsRef = useRef<Caja[]>([]);
+  const boundsRef = useRef<Box[]>([]);
   const pathsRef = useRef<string[]>([]);
 
-  const aplicarEstilosTarjeta = useCallback((i: number, node: HTMLDivElement | null) => {
+  const applyCardStyles = useCallback((i: number, node: HTMLDivElement | null) => {
     cardRefs.current[i] = node;
     if (!node) return;
     const box = boundsRef.current[i];
@@ -172,36 +208,27 @@ export default function Mascara({ elementos }: Props) {
 
   useEffect(() => {
     const handleResize = () => {
-      if (containerRef.current) {
-        const { clientWidth, clientHeight } = containerRef.current;
-        setDimensions({ width: clientWidth, height: clientHeight });
-        
-        const isMobile = clientWidth < 768;
-        if (semillasRef.current.length === 0 && elementos.length > 0) {
-          if (isMobile) {
-            // Vertical distribution for mobile
-            semillasRef.current = elementos.map((_, i) => ({
-              x: clientWidth / 2 + (Math.random() - 0.5) * 20,
-              y: (clientHeight / elementos.length) * (i + 0.5)
-            }));
-          } else {
-            semillasRef.current = elementos.map(() => ({
-              x: Math.random() * clientWidth,
-              y: Math.random() * clientHeight
-            }));
-          }
-        }
+      if (!containerRef.current) return;
+      const { clientWidth, clientHeight } = containerRef.current;
+      setDimensions({ width: clientWidth, height: clientHeight });
 
-        // Al cambiar el tamaño hay que volver a relajar el diagrama
-        convergedRef.current = false;
-        lastFrameRef.current = 0;
-        iteracionRef.current = 0;
+      const isMobile = clientWidth < 768;
+      const changedLayout = wasMobileRef.current !== null && wasMobileRef.current !== isMobile;
+
+      if (cells.length > 0 && (seedsRef.current.length === 0 || changedLayout)) {
+        wasMobileRef.current = isMobile;
+        seedsRef.current = deterministicSeeds(cells.length, clientWidth, clientHeight, isMobile);
       }
+
+      // Al cambiar el tamaño hay que volver a relajar el diagrama
+      convergedRef.current = false;
+      lastFrameRef.current = 0;
+      iterationRef.current = 0;
     };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [elementos.length]);
+  }, [cells.length]);
 
   const animate = useCallback((time: number) => {
     if (time - lastFrameRef.current < FRAME_INTERVAL) {
@@ -211,56 +238,67 @@ export default function Mascara({ elementos }: Props) {
     lastFrameRef.current = time;
 
     const { width, height } = dimensions;
-    const prev = semillasRef.current;
+    const prev = seedsRef.current;
     if (width === 0 || prev.length === 0) return;
 
-    const celdas = generarCeldasVoronoi(prev, width, height);
-    const centroides = celdas.map(c => calcularCentroide(c));
+    const reduced = prefersReducedMotion();
+    if (reduced && !convergedRef.current) {
+      // Sin animación: resolvemos el layout de una sola vez.
+      seedsRef.current = relaxSeeds(prev, width, height, 30);
+    }
 
-    const bounds: Caja[] = [];
+    const seeds = seedsRef.current;
+    const polygons = generateVoronoiCells(seeds, width, height);
+    const centroids = polygons.map(c => centroidOf(c));
+
+    const bounds: Box[] = [];
     const paths: string[] = [];
 
-    celdas.forEach((celda, i) => {
-      const polyEncogido = encogerPoligono(celda, 10);
+    polygons.forEach((celda, i) => {
+      const shrunkPoly = shrinkPolygon(celda, 10);
 
-      const box = obtenerCaja(polyEncogido);
+      const box = boundingBox(shrunkPoly);
       bounds.push(box);
 
-      const cssPath = generarPathSuave(polyEncogido, 30, box.x, box.y);
+      const cssPath = smoothPath(shrunkPoly, 30, box.x, box.y);
       paths.push(cssPath);
 
       // Actualización imperativa: sin pasar por el estado de React
       const pathNode = pathRefs.current[i];
       if (pathNode) {
-        pathNode.data(cssPath);
-        pathNode.x(box.x);
-        pathNode.y(box.y);
+        pathNode.setAttribute('d', cssPath);
+        pathNode.setAttribute('transform', `translate(${box.x} ${box.y})`);
       }
     });
 
     boundsRef.current = bounds;
     pathsRef.current = paths;
-    bounds.forEach((_, i) => aplicarEstilosTarjeta(i, cardRefs.current[i]));
+    bounds.forEach((_, i) => applyCardStyles(i, cardRefs.current[i]));
+
+    if (reduced) {
+      convergedRef.current = true;
+      return;
+    }
 
     let maxMove = 0;
-    const nuevas = prev.map((p, i) => {
-      const nx = lerp(p.x, centroides[i].x, 0.05);
-      const ny = lerp(p.y, centroides[i].y, 0.05);
+    const nextSeeds = seeds.map((p, i) => {
+      const nx = lerp(p.x, centroids[i].x, RELAJACION);
+      const ny = lerp(p.y, centroids[i].y, RELAJACION);
       maxMove = Math.max(maxMove, Math.hypot(nx - p.x, ny - p.y));
       return { x: nx, y: ny };
     });
-    semillasRef.current = nuevas;
+    seedsRef.current = nextSeeds;
 
-    iteracionRef.current += 1;
+    iterationRef.current += 1;
 
     // Detenemos la animación al converger o al alcanzar el tope de iteraciones
-    if (maxMove < UMBRAL_CONVERGENCIA || iteracionRef.current >= MAX_ITERACIONES) {
+    if (maxMove < UMBRAL_CONVERGENCIA || iterationRef.current >= MAX_ITERACIONES) {
       convergedRef.current = true;
       return;
     }
 
     requestRef.current = requestAnimationFrame(animate);
-  }, [dimensions, aplicarEstilosTarjeta]);
+  }, [dimensions, applyCardStyles]);
 
   // Only start animation when visible
   useEffect(() => {
@@ -275,67 +313,73 @@ export default function Mascara({ elementos }: Props) {
   }, []);
 
   useEffect(() => {
-    if (isVisible && dimensions.width > 0 && elementos.length > 0 && !convergedRef.current) {
+    if (isVisible && dimensions.width > 0 && cells.length > 0 && !convergedRef.current) {
       requestRef.current = requestAnimationFrame(animate);
     }
     return () => {
       cancelAnimationFrame(requestRef.current!);
     };
-  }, [animate, dimensions, isVisible, elementos.length]);
+  }, [animate, dimensions, isVisible, cells.length]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-screen overflow-hidden bg-gray-50">
+    <div ref={containerRef} className="relative w-full h-screen overflow-hidden bg-gray-50 font-outfit">
 
       {/* Pill link at top */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 group">
         <Link
           href="/proyectos"
+          data-interactive="true"
           className="inline-flex items-center gap-3 rounded-full px-8 py-4
                      bg-neutral-900 text-white text-base font-semibold tracking-widest uppercase
                      no-underline shadow-lg shadow-neutral-900/25 ring-1 ring-white/20
                      backdrop-blur-sm
                      transition-all duration-300 ease-out
-                     hover:bg-neutral-800 hover:scale-105 hover:shadow-xl hover:shadow-neutral-900/40"
+                     hover:bg-neutral-800 hover:scale-105 hover:shadow-xl hover:shadow-neutral-900/40
+                     focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900"
         >
           Ver Todos los Proyectos
           <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
         </Link>
       </div>
 
-      <Stage width={dimensions.width} height={dimensions.height} className="absolute inset-0 z-0 pointer-events-none">
-        <Layer>
-          <Rect width={dimensions.width} height={dimensions.height} fill="transparent" />
-          {elementos.map((_, i) => (
-            <Path
-              key={i}
-              ref={(node) => { pathRefs.current[i] = node; }}
-              fill="white"
-              stroke="#e2e8f0"
-              strokeWidth={3}
-            />
-          ))}
-        </Layer>
-      </Stage>
+      <svg
+        className="absolute inset-0 z-0 pointer-events-none"
+        width={dimensions.width}
+        height={dimensions.height}
+        aria-hidden="true"
+        focusable="false"
+      >
+        <rect width={dimensions.width} height={dimensions.height} fill="transparent" />
+        {cells.map((_, i) => (
+          <path
+            key={i}
+            ref={(node) => { pathRefs.current[i] = node; }}
+            fill="white"
+            stroke="#e2e8f0"
+            strokeWidth={3}
+          />
+        ))}
+      </svg>
 
       <div className="absolute inset-0 z-10 pointer-events-none">
-        {elementos.map((elemento, i) => (
+        {cells.map((cell, i) => (
           <div
             key={i}
-            ref={(node) => aplicarEstilosTarjeta(i, node)}
+            ref={(node) => applyCardStyles(i, node)}
             className="absolute pointer-events-auto"
             style={{ left: 0, top: 0 }}
           >
-            {React.isValidElement(elemento) ? (
-              React.cloneElement(elemento as React.ReactElement, {
+            {React.isValidElement(cell) ? (
+              React.cloneElement(cell as React.ReactElement<{ style?: React.CSSProperties }>, {
                 style: {
-                  ...((elemento.props as any)?.style || {}),
+                  ...((cell.props as { style?: React.CSSProperties }).style || {}),
                   width: '100%',
                   height: '100%'
                 }
               })
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {elemento}
+                {cell}
               </div>
             )}
           </div>

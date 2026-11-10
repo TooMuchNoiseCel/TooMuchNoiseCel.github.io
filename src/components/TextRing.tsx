@@ -4,7 +4,7 @@ import React, { useRef, useMemo, Suspense, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Text3D, Html, useProgress } from '@react-three/drei';
 import * as THREE from 'three';
-import splinePointsData from '/public/spline-points.json';
+import splinePointsData from '../../public/spline-points.json';
 
 const params = {
   fontSize: 0.1,
@@ -21,7 +21,7 @@ const params = {
 
 const fontUrl = '/fonts/Gentilis_Bold.json';
 
-function Letter({ char, color = 'black' }) {
+function Letter({ char, color = 'black' }: { char: string; color?: string }) {
   return (
     <Text3D font={fontUrl} size={params.fontSize} height={0.01} curveSegments={2} bevelEnabled bevelThickness={0.01} bevelSize={0.005}>
       {char}
@@ -31,7 +31,7 @@ function Letter({ char, color = 'black' }) {
 }
 
 function RingOfLetters() {
-  const groupRef = useRef(null);
+  const groupRef = useRef<THREE.Group>(null);
   const tickerOffset = useRef(0);
   
   const languageData = useMemo(() => [
@@ -45,7 +45,7 @@ function RingOfLetters() {
   ], []);
 
   const allCharacters = useMemo(() => {
-    const items = [];
+    const items: { char: string; color: string }[] = [];
     const repeatedLanguages = Array(params.wordRepeats).fill(languageData).flat();
     repeatedLanguages.forEach((lang) => {
       for (const char of ' • ') items.push({ char, color: 'black' });
@@ -54,12 +54,12 @@ function RingOfLetters() {
     return items.reverse();
   }, [languageData]);
 
-  const [renderedCharacters, setRenderedCharacters] = useState([]);
+  const [renderedCharacters, setRenderedCharacters] = useState<{ char: string; color: string }[]>([]);
 
   useEffect(() => {
     let currentIndex = 0;
     const batchSize = 15;
-    let animationFrameId;
+    let animationFrameId: number | undefined;
 
     function addBatch() {
       if (currentIndex >= allCharacters.length) return;
@@ -71,10 +71,15 @@ function RingOfLetters() {
     
     addBatch();
 
-    return () => cancelAnimationFrame(animationFrameId); // Limpieza
+    return () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    }; // Limpieza
   }, [allCharacters]);
 
-  const splinePoints = useMemo(() => splinePointsData.map(p => new THREE.Vector3(...p)), []);
+  const splinePoints = useMemo(
+    () => (splinePointsData as number[][]).map(p => new THREE.Vector3(p[0], p[1], p[2])),
+    []
+  );
   const curve = useMemo(() => new THREE.CatmullRomCurve3(splinePoints), [splinePoints]);
   const curveLength = useMemo(() => curve.getLength(), [curve]);
   

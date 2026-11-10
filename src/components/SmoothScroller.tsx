@@ -1,25 +1,25 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ReactLenis } from "@studio-freight/react-lenis";
 
 function SmoothScroller({ children }: { children: React.ReactNode }) {
-  const prefersReduced =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const isMobile =
-    typeof window !== "undefined" && window.innerWidth < 768;
+  // Arrancamos sin suavizado para que server y cliente rendericen igual.
+  const [smooth, setSmooth] = useState(false);
 
-  if (prefersReduced || isMobile) {
-    return <>{children}</>;
-  }
+  useEffect(() => {
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isMobile = window.innerWidth < 768;
+    setSmooth(!prefersReduced && !isMobile);
+  }, []);
 
   return (
     <ReactLenis
       root
-      options={{ lerp: 0.1, duration: 1.5, smoothTouch: true }}
+      options={{ lerp: 0.1, duration: 1.5, smoothWheel: smooth }}
     >
-      {children}
+      {/* El tipado de react-lenis trae su propia copia de @types/react. */}
+      {children as never}
     </ReactLenis>
   );
 }

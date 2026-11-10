@@ -1,64 +1,90 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { gsap } from 'gsap';
+import { useEffect, useRef } from 'react';
 import RotatingText from './RotatingText';
 
+const ROTATING_SUBTITLES = [
+  'Coder',
+  'Full Stack Developer',
+  'UI/UX Problem Solver',
+  'Systems Thinker',
+  'Lifelong Learner',
+  'Systems & Algorithms Enthusiast',
+  'Low-Level & High-Level Programmer',
+];
+
 const Header = () => {
-  const [isLoaderFinished, setIsLoaderFinished] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const rotatingSubtitles = [
-    'Coder',
-    'Full Stack Developer',
-    'UI/UX Problem Solver',
-    'Systems Thinker',
-    'Lifelong Learner',
-    'Systems & Algorithms Enthusiast',
-    'Low-Level & High-Level Programmer',
-  ];
-
+  // El parallax rota el robot dentro del canvas, no la cámara ni el iframe.
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoaderFinished(true);
-    }, 500);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    return () => clearTimeout(timer);
+    const target = { x: 0, y: 0 };
+    let raf = 0;
+
+    const send = () => {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: 'humanocito-parallax', x: target.x, y: target.y },
+        '*'
+      );
+      raf = 0;
+    };
+
+    const onMove = (e: MouseEvent) => {
+      target.x = e.clientX / window.innerWidth - 0.5;
+      target.y = e.clientY / window.innerHeight - 0.5;
+      if (!raf) raf = requestAnimationFrame(send);
+    };
+
+    window.addEventListener('mousemove', onMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
-
-  useEffect(() => {
-    gsap.set('.reveal-line-content', { yPercent: 100 });
-
-    if (isLoaderFinished) {
-      const tl = gsap.timeline();
-      tl.to('.reveal-line-content', {
-        yPercent: 0,
-        duration: 1.2,
-        stagger: 0.175,
-        ease: 'expo.out',
-      });
-    }
-  }, [isLoaderFinished]);
 
   return (
     <header
-      className="relative z-10 flex h-screen items-center justify-center overflow-hidden bg-black text-white"
+      className="relative z-10 flex min-h-screen items-center overflow-hidden bg-black py-20 text-white lg:py-0"
       data-scroll-section
     >
-      <div className="cursor-default text-center">
-        <h1 className="mb-4 font-playfair text-[clamp(2.5rem,10vw,7rem)] font-medium leading-[1.1] text-white">
-          <span className="block overflow-hidden">
-            <span className="reveal-line-content inline-block">Leonardo</span>
-          </span>
-          <span className="block overflow-hidden pl-[clamp(1rem,5vw,4rem)]">
-            <span className="reveal-line-content inline-block">Castañeda</span>
-          </span>
-        </h1>
+      <div className="mx-auto grid w-full max-w-[1500px] items-center gap-24 px-6 sm:px-8 lg:grid-cols-2 lg:gap-32 xl:gap-[350px]">
+        <div className="cursor-default text-left">
+          <h1
+            className="mb-4 font-playfair text-[clamp(2.5rem,7vw,6.75rem)] font-medium leading-[1.02] text-white"
+            style={{ letterSpacing: '0.015em' }}
+          >
+            <span className="block overflow-hidden">
+              <span className="reveal-line-content inline-block">Leonardo</span>
+            </span>
+            <span className="block overflow-hidden">
+              <span className="reveal-line-content reveal-line-content--delayed inline-block">Castañeda</span>
+            </span>
+          </h1>
 
-        <div className="text-[clamp(0.8rem,3vw,1.2rem)] font-extralight tracking-wider text-neutral-400">
-          <RotatingText
-            texts={rotatingSubtitles}
-            staggerDuration={0.03}
-            rotationInterval={3000}
-            mainClassName="justify-center"
+          <div className="max-w-xl text-[clamp(0.8rem,2.2vw,1.15rem)] font-extralight tracking-wider text-neutral-400">
+            <RotatingText
+              texts={ROTATING_SUBTITLES}
+              staggerDuration={0.03}
+              rotationInterval={3000}
+              mainClassName="justify-start"
+            />
+          </div>
+        </div>
+
+        <div className="relative h-[360px] w-full overflow-hidden sm:h-[480px] lg:h-[560px] xl:h-[640px]">
+          <iframe
+            ref={iframeRef}
+            src="/humanocito/index.html"
+            title="Humanocito caminando"
+            className="pointer-events-none h-full w-full border-0"
+            aria-hidden="true"
+            onLoad={() => {
+              iframeRef.current?.contentWindow?.postMessage(
+                { type: 'humanocito-parallax', x: 0, y: 0 },
+                '*'
+              );
+            }}
           />
         </div>
       </div>

@@ -1,129 +1,105 @@
 'use client';
 
-import { Pill, Section } from '../page';
-import BackButton from '@/components/BackButton';
+import {
+  ProjectShell,
+  ProjectHeader,
+  InfoCard,
+  Section,
+  RepoLink,
+} from '@/components/ProjectUi';
 import ZoomableImage from '@/components/ZoomableImage';
-import { FaTerminal, FaPaintBrush, FaTasks, FaShieldAlt } from 'react-icons/fa';
+
+const GITHUB_URL = 'https://github.com/senchpimy/marmol';
+
+const roadmap = [
+  'Servidor de backups',
+  'Canvas para dibujo',
+  'Temas y colores',
+  'Enlaces entre notas',
+  'Renombrar y eliminar archivos',
+  'Calendario integrado',
+  'Atajos de teclado',
+  'Búsqueda por metadata',
+  'Iconos en el explorador',
+  'Búsqueda dentro de archivos',
+  'Fuentes personalizadas',
+  'Copiar archivos entre vaults',
+];
 
 export default function PaginaProyectoMarmol() {
-  const GITHUB_URL = "https://github.com/senchpimy/marmol";
-
   return (
-    <>
-      <div
-        className="fixed inset-0 -z-10 h-full w-full"
-        style={{ backgroundImage: 'url(/fondo.svg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+    <ProjectShell>
+      <ProjectHeader
+        kicker="Aplicación de escritorio"
+        title="Marmol"
+        subtitle="Una aplicación en Rust para gestionar notas y proyectos dentro de vaults seguras."
+        tags={['Rust 1.70+', 'egui', 'Licencia MIT']}
+        accent="text-sky-400/80"
       />
 
-      <main className="flex w-full min-h-screen justify-center p-8 text-neutral-200 sm:p-16">
-        <div className="w-full max-w-5xl"> {}
+      <InfoCard
+        items={[
+          { label: 'Estado', value: 'En desarrollo' },
+          { label: 'Stack', value: 'Rust + egui' },
+          { label: 'Licencia', value: 'MIT' },
+        ]}
+      />
 
-          <BackButton />
-
-          <header className="mb-12 text-center">
-            <h1 className="mb-2 bg-gradient-to-r from-sky-400 to-cyan-300 bg-clip-text text-5xl font-bold text-transparent sm:text-6xl">
-              Marmol
-            </h1>
-            <p className="mx-auto mb-6 max-w-3xl text-xl text-neutral-300">
-              Una aplicación de escritorio en Rust para la gestión de notas y proyectos en "vaults" seguras.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Pill className="bg-sky-500/80 text-sky-50">Licencia MIT</Pill>
-              <Pill className="bg-emerald-500/80 text-emerald-50">Versión 0.1.0</Pill>
-              <Pill className="bg-orange-500/80 text-orange-50">Rust 1.70+</Pill>
-              <Pill className="bg-emerald-500/80 text-emerald-50">egui + eframe</Pill>
-            </div>
-          </header>
-
-          <div className="mb-16 rounded-xl bg-neutral-900/50 p-4 shadow-2xl ring-1 ring-white/10">
-            <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-neutral-800">
-            <ZoomableImage 
-              src="/images/marmol1.png" 
-              alt="Captura de pantalla de la aplicación Marmol" 
-              className="w-full rounded-lg"
-            /> 
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-x-16 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <Section title="Características Principales" icon={<FaTasks />}>
-                <ul className="grid list-inside list-disc grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-                  <li>Gestión de "vaults" (proyectos).</li>
-                  <li>Soporte multi-archivo: Markdown, etc.</li>
-                  <li>Interfaz moderna con paneles y pestañas.</li>
-                  <li>Creación de archivos desde plantillas.</li>
-                  <li>Configuración personalizable.</li>
-                  <li>Sistema de guardado automático de estado.</li>
-                  <li>Escrito 100% en Rust seguro.</li>
-                  <li>Multiplataforma (Windows, macOS, Linux).</li>
-                </ul>
-              </Section>
-
-          <div className="mb-16 rounded-xl bg-neutral-900/50 p-4 shadow-2xl ring-1 ring-white/10">
-            <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-neutral-800">
-            <ZoomableImage 
-              src="/images/marmol2.png" 
-              alt="Captura de pantalla de la aplicación Marmol" 
-              className="w-full rounded-lg"
-            /> 
-            </div>
-          </div>
-              
-              <Section title="Roadmap y Futuras Mejoras" icon={<FaPaintBrush />}>
-                <p className="mb-4 text-neutral-400">
-                  Marmol está en desarrollo activo. Las próximas funcionalidades planeadas incluyen:
-                </p>
-                <div className="grid grid-cols-1 gap-x-8 gap-y-3 text-sm sm:grid-cols-2 md:grid-cols-3">
-                  <TodoItem>Servidor de Backups</TodoItem>
-                  <TodoItem>Canvas para dibujo</TodoItem>
-                  <TodoItem>Temas y colores</TodoItem>
-                  <TodoItem>Enlaces entre notas</TodoItem>
-                  <TodoItem>Renombrar/eliminar archivos</TodoItem>
-                  <TodoItem>Calendario integrado</TodoItem>
-                  <TodoItem>Atajos de teclado</TodoItem>
-                  <TodoItem>Búsqueda por metadata</TodoItem>
-                  <TodoItem>Iconos en explorador</TodoItem>
-                  <TodoItem>Búsqueda en archivos</TodoItem>
-                  <TodoItem>Fuentes personalizadas</TodoItem>
-                  <TodoItem>Copiar archivos entre vaults</TodoItem>
-                </div>
-              </Section>
-            </div>
-
-            <aside className="lg:col-span-1">
-              <Section title="Licencia" icon={<FaShieldAlt />}>
-                <p>
-                  Este proyecto está distribuido bajo la licencia MIT. Puedes ver los detalles completos en el repositorio.
-                </p>
-                <a 
-                  href={`${GITHUB_URL}/blob/main/LICENSE`}
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="mt-4 inline-block text-sky-400 transition-colors hover:text-sky-300"
-                >
-                  Ver archivo LICENSE &rarr;
-                </a>
-              </Section>
-            </aside>
-          </div>
+      <Section title="Capturas">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <ZoomableImage
+            src="/images/marmol1.png"
+            alt="Captura de la aplicación Marmol"
+            className="w-full rounded-xl border border-neutral-800"
+          />
+          <ZoomableImage
+            src="/images/marmol2.png"
+            alt="Captura de la aplicación Marmol con varias notas abiertas"
+            className="w-full rounded-xl border border-neutral-800"
+          />
         </div>
-      </main>
-    </>
-  );
-}
+      </Section>
 
+      <Section title="Características">
+        <ul className="grid list-disc gap-x-8 gap-y-2 pl-5 marker:text-neutral-700 sm:grid-cols-2">
+          <li>Gestión de vaults (proyectos).</li>
+          <li>Soporte multi-archivo: Markdown y más.</li>
+          <li>Interfaz con paneles y pestañas.</li>
+          <li>Creación de archivos desde plantillas.</li>
+          <li>Configuración personalizable.</li>
+          <li>Guardado automático del estado.</li>
+          <li>Escrito 100% en Rust seguro.</li>
+          <li>Multiplataforma: Windows, macOS y Linux.</li>
+        </ul>
+      </Section>
 
+      <Section title="Roadmap">
+        <p>Marmol está en desarrollo activo. Estas son las siguientes funciones planeadas:</p>
+        <ul className="grid list-disc gap-x-8 gap-y-2 pl-5 marker:text-neutral-700 sm:grid-cols-2">
+          {roadmap.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </Section>
 
+      <Section title="Licencia">
+        <p>
+          El proyecto se distribuye bajo la licencia MIT. Puedes revisar el texto completo
+          en el repositorio.
+        </p>
+        <a
+          href={`${GITHUB_URL}/blob/main/LICENSE`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block text-sm text-neutral-300 underline decoration-neutral-700 underline-offset-4 transition-colors hover:text-white"
+        >
+          Ver archivo LICENSE
+        </a>
+      </Section>
 
-function TodoItem({ children }: { children: React.ReactNode }) {
-  return <div className="flex items-center text-neutral-400">{children}</div>;
-}
-
-function CodeBlock({ text }: { text: string }) {
-  return (
-    <div className="rounded-lg bg-neutral-900 p-4 font-mono text-sm text-sky-300 ring-1 ring-neutral-700">
-      <pre><code>$ {text}</code></pre>
-    </div>
+      <div className="mt-28">
+        <RepoLink href={GITHUB_URL} />
+      </div>
+    </ProjectShell>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Sketch from 'react-p5';
 import type P5 from 'p5';
 import type {
@@ -8,7 +8,7 @@ import type {
 } from 'p5';
 
 export class LimitedList < T > {
-    private readonly limit: number;
+    readonly limit: number;
     private items: T[] = [];
 
     constructor(limit: number) {
@@ -257,7 +257,31 @@ class Boid implements Dibujable {
 let bgGif: P5Image;
 
 const RandomSquaresSketch: React.FC < RandomSquaresSketchProps > = (props) => {
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const sketchRef = useRef<P5 | null>(null);
+    const visibleRef = useRef(true);
+
+    // Pausa el sketch cuando sale de pantalla y lo reanuda al volver.
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                visibleRef.current = entry.isIntersecting;
+                if (!sketchRef.current) return;
+                if (entry.isIntersecting) sketchRef.current.loop();
+                else sketchRef.current.noLoop();
+            },
+            { threshold: 0.05 }
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
     const setup = (p5: P5, canvasParentRef: HTMLElement) => {
+        sketchRef.current = p5;
         p5.createCanvas(canvasParentRef.clientWidth, canvasParentRef.clientHeight).parent(canvasParentRef);
         p5.colorMode(p5.HSB, 360, 100, 100, 100);
         p5.rectMode(p5.CENTER);
@@ -266,9 +290,13 @@ const RandomSquaresSketch: React.FC < RandomSquaresSketchProps > = (props) => {
         for (let i = 0; i < boids.limit; i++) {
             boids.add(new Boid(p5, p5.random(p5.width), p5.random(p5.height)));
         }
+        if (!visibleRef.current) p5.noLoop();
     };
 
     const draw = (p5: P5) => {
+        // Dibuja uno de cada dos frames.
+        if (p5.frameCount % 2 !== 0) return;
+
         if (bgGif && bgGif.width > 0) {
             p5.background(bgGif);
         } else {
@@ -334,6 +362,10 @@ const RandomSquaresSketch: React.FC < RandomSquaresSketchProps > = (props) => {
             dibujarCurvaCaotica();
         }
     };
-    return < Sketch setup = {setup } draw = {draw} className = {props.className }/>;
+    return (
+        <div ref={containerRef} className={props.className}>
+            <Sketch setup={setup} draw={draw} className="h-full w-full" />
+        </div>
+    );
 };
 export default RandomSquaresSketch;

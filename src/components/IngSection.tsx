@@ -4,7 +4,7 @@ import React, { Suspense, useMemo } from 'react';
 import { Element } from 'react-scroll';
 import { useInView } from 'react-intersection-observer';
 import ScrollReveal from './ScrollReveal';
-import TextRing from './unused/TextRing.tsx';
+import TextRing from './TextRing';
 
 const prepareTextForAnimation = (text: string) => {
   return text.split(/(\s+)/).map((segment, index) => {

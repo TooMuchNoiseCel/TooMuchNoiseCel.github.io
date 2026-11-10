@@ -280,6 +280,36 @@ const RandomSquaresSketch: React.FC < RandomSquaresSketchProps > = (props) => {
         return () => observer.disconnect();
     }, []);
 
+    // Si cambia el tamaño del contenedor, redimensiona el canvas de p5.
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        let raf = 0;
+
+        const resizeCanvas = () => {
+            const p5 = sketchRef.current;
+            if (!p5) return;
+
+            const width = el.clientWidth;
+            const height = el.clientHeight;
+            if (width > 0 && height > 0 && (p5.width !== width || p5.height !== height)) {
+                p5.resizeCanvas(width, height);
+            }
+        };
+
+        const observer = new ResizeObserver(() => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(resizeCanvas);
+        });
+
+        observer.observe(el);
+        return () => {
+            observer.disconnect();
+            cancelAnimationFrame(raf);
+        };
+    }, []);
+
     const setup = (p5: P5, canvasParentRef: HTMLElement) => {
         sketchRef.current = p5;
         p5.createCanvas(canvasParentRef.clientWidth, canvasParentRef.clientHeight).parent(canvasParentRef);

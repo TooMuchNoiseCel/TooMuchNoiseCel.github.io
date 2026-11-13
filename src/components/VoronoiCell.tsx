@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { refractive } from '@hashintel/refractive';
 
 interface VoronoiCellProps {
   imageSrc: string;   // URL de la imagen o GIF
@@ -44,7 +43,7 @@ export default function VoronoiCell({
         </div>
 
         <div className="absolute inset-0 w-full h-full rounded-xl overflow-hidden [transform:rotateY(180deg)] [backface-visibility:hidden]">
-          {/* Imagen nítida como fondo; el shader de vidrio la refracta. */}
+          {/* Imagen nítida como fondo; el panel de vidrio la difumina. */}
           <img
             src={imageSrc}
             alt=""
@@ -56,19 +55,12 @@ export default function VoronoiCell({
           />
           <div className="absolute inset-0 bg-neutral-950/45" />
 
-          <refractive.div
+          {/* Panel de "vidrio" con blur CSS. Antes usaba
+              @hashintel/refractive (backdrop-filter con filtro SVG) y dejaba
+              líneas rectas/halos al voltear la tarjeta en Chrome. */}
+          <div
             className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white
-                       ring-1 ring-inset ring-white/15"
-            style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
-            refraction={{
-              radius: 12,
-              blur: 3,
-              bezelWidth: 16,
-              glassThickness: 60,
-              refractiveIndex: 1.5,
-              specularOpacity: 0.55,
-              specularAngle: -Math.PI / 4,
-            }}
+                       bg-white/[0.04] backdrop-blur-[3px]"
           >
             <h3 className="text-2xl font-bold mb-4">{title}</h3>
 
@@ -87,7 +79,7 @@ export default function VoronoiCell({
             >
               {linkText}
             </a>
-          </refractive.div>
+          </div>
         </div>
       </div>
     </div>

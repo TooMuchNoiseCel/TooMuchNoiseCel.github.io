@@ -184,7 +184,6 @@ export default function VoronoiProjects({ cells }: Props) {
   const iterationRef = useRef(0);
   const wasMobileRef = useRef<boolean | null>(null);
 
-  const pathRefs = useRef<(SVGPathElement | null)[]>([]);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const boundsRef = useRef<Box[]>([]);
   const pathsRef = useRef<string[]>([]);
@@ -262,13 +261,6 @@ export default function VoronoiProjects({ cells }: Props) {
 
       const cssPath = smoothPath(shrunkPoly, 30, box.x, box.y);
       paths.push(cssPath);
-
-      // Actualización imperativa: sin pasar por el estado de React
-      const pathNode = pathRefs.current[i];
-      if (pathNode) {
-        pathNode.setAttribute('d', cssPath);
-        pathNode.setAttribute('transform', `translate(${box.x} ${box.y})`);
-      }
     });
 
     boundsRef.current = bounds;
@@ -341,25 +333,6 @@ export default function VoronoiProjects({ cells }: Props) {
           <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
         </Link>
       </div>
-
-      <svg
-        className="absolute inset-0 z-0 pointer-events-none"
-        width={dimensions.width}
-        height={dimensions.height}
-        aria-hidden="true"
-        focusable="false"
-      >
-        <rect width={dimensions.width} height={dimensions.height} fill="transparent" />
-        {cells.map((_, i) => (
-          <path
-            key={i}
-            ref={(node) => { pathRefs.current[i] = node; }}
-            fill="white"
-            stroke="#e2e8f0"
-            strokeWidth={3}
-          />
-        ))}
-      </svg>
 
       <div className="absolute inset-0 z-10 pointer-events-none">
         {cells.map((cell, i) => (

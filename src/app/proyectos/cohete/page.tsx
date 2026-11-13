@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import {
   ProjectShell,
   ProjectHeader,
@@ -9,6 +10,11 @@ import {
   CodeBlock,
   RepoLink,
 } from '@/components/ProjectUi';
+
+// El visor 3D usa WebGL: solo cliente.
+const TelemetrySimulation = dynamic(() => import('@/components/sim/TelemetrySimulation'), {
+  ssr: false,
+});
 
 const GITHUB_URL = 'https://github.com/senchpimy/Telemetria';
 
@@ -86,6 +92,8 @@ export default function PaginaProyectoTelemetria() {
           falla, el resto de la telemetría sigue funcionando.
         </p>
       </Section>
+
+      <TelemetrySimulation />
 
       <div className="mt-28">
         <RepoLink href={GITHUB_URL}>Ver firmware en GitHub</RepoLink>

@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import {
   ProjectShell,
   ProjectHeader,
@@ -9,6 +10,11 @@ import {
   Pill,
   RepoLink,
 } from '@/components/ProjectUi';
+
+// El visor 3D usa WebGL: solo cliente.
+const HelmetSimulation = dynamic(() => import('@/components/sim/HelmetSimulation'), {
+  ssr: false,
+});
 
 const REPO_URL = 'https://github.com/senchpimy/CascoMoto';
 
@@ -102,6 +108,8 @@ export default function PaginaProyectoMotoAlert() {
           <Pill>shared_preferences</Pill>
         </div>
       </Section>
+
+      <HelmetSimulation />
 
       <div className="mt-28">
         <RepoLink href={REPO_URL} />

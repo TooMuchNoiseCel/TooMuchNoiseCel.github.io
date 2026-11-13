@@ -5,25 +5,18 @@ import {
   ProjectHeader,
   InfoCard,
   Section,
+  MiniCard,
   RepoLink,
 } from '@/components/ProjectUi';
-import ZoomableImage from '@/components/ZoomableImage';
 
 const GITHUB_URL = 'https://github.com/senchpimy/marmol';
 
 const roadmap = [
-  'Servidor de backups',
-  'Canvas para dibujo',
-  'Temas y colores',
-  'Enlaces entre notas',
-  'Renombrar y eliminar archivos',
-  'Calendario integrado',
-  'Atajos de teclado',
-  'Búsqueda por metadata',
-  'Iconos en el explorador',
-  'Búsqueda dentro de archivos',
-  'Fuentes personalizadas',
-  'Copiar archivos entre vaults',
+  'Panel de backlinks y grafo local de la nota.',
+  'Web clipper para capturar contenido desde el navegador.',
+  'Calendario, repetición espaciada y presentaciones.',
+  'Bookmarks, colores por carpeta y colores de tags.',
+  'Pulir el build de Android y el consumo de memoria.',
 ];
 
 export default function PaginaProyectoMarmol() {
@@ -32,50 +25,79 @@ export default function PaginaProyectoMarmol() {
       <ProjectHeader
         kicker="Aplicación de escritorio"
         title="Marmol"
-        subtitle="Una aplicación en Rust para gestionar notas y proyectos dentro de vaults seguras."
-        tags={['Rust 1.70+', 'egui', 'Licencia MIT']}
+        subtitle="Un espacio de trabajo local para notas, diagramas, tareas y proyectos, construido en Rust con egui."
+        tags={['Rust 1.70+', 'egui 0.36', 'v0.1.6', 'Licencia MIT']}
         accent="text-sky-400/80"
       />
 
       <InfoCard
         items={[
-          { label: 'Estado', value: 'En desarrollo' },
-          { label: 'Stack', value: 'Rust + egui' },
-          { label: 'Licencia', value: 'MIT' },
+          { label: 'Estado', value: 'Desarrollo activo' },
+          { label: 'Stack', value: 'Rust · egui · eframe' },
+          { label: 'Versión', value: '0.1.6' },
         ]}
       />
 
-      <Section title="Capturas">
+      <Section title="Editor y vaults">
+        <ul className="list-disc space-y-2 pl-5 marker:text-neutral-700">
+          <li>Editor Markdown con vista y edición, resaltado de sintaxis, imágenes, SVG/GIF y emojis.</li>
+          <li>Pestañas y paneles acoplables, árbol de archivos y quick switcher.</li>
+          <li>Wikilinks con autocompletado y enlaces internos clicables.</li>
+          <li>Vaults con configuración propia, metadatos/frontmatter y autoguardado.</li>
+          <li>Búsqueda dentro de archivos, incluso con expresiones regulares.</li>
+          <li>Command palette para ejecutar acciones sin soltar el teclado.</li>
+          <li>Iconos por archivo con paquetes de FontAwesome integrados.</li>
+        </ul>
+      </Section>
+
+      <Section title="Diagramas y matemáticas">
         <div className="grid gap-4 sm:grid-cols-2">
-          <ZoomableImage
-            src="/images/marmol1.png"
-            alt="Captura de la aplicación Marmol"
-            className="w-full rounded-xl border border-neutral-800"
-          />
-          <ZoomableImage
-            src="/images/marmol2.png"
-            alt="Captura de la aplicación Marmol con varias notas abiertas"
-            className="w-full rounded-xl border border-neutral-800"
-          />
+          <MiniCard title="Mermaid">
+            Diagramas de flujo, secuencia y más directamente desde bloques de código.
+          </MiniCard>
+          <MiniCard title="Vega / Vega-Lite">
+            Gráficas declarativas renderizadas a SVG con un motor propio en Rust puro.
+          </MiniCard>
+          <MiniCard title="LaTeX nativo">
+            Motor matemático portado de Tinta, con vista previa en vivo bajo el cursor.
+          </MiniCard>
+          <MiniCard title="TikZ">
+            Dibujos y diagramas TikZ renderizados dentro de la nota.
+          </MiniCard>
+          <MiniCard title="Excalidraw">
+            Lienzo de dibujo integrado, con edición, selección y exportación.
+          </MiniCard>
+          <MiniCard title="Sketch + IA">
+            Dibuja a mano y convierte el trazo a LaTeX con un modelo de visión (requiere API key).
+          </MiniCard>
         </div>
       </Section>
 
-      <Section title="Características">
-        <ul className="grid list-disc gap-x-8 gap-y-2 pl-5 marker:text-neutral-700 sm:grid-cols-2">
-          <li>Gestión de vaults (proyectos).</li>
-          <li>Soporte multi-archivo: Markdown y más.</li>
-          <li>Interfaz con paneles y pestañas.</li>
-          <li>Creación de archivos desde plantillas.</li>
-          <li>Configuración personalizable.</li>
-          <li>Guardado automático del estado.</li>
-          <li>Escrito 100% en Rust seguro.</li>
-          <li>Multiplataforma: Windows, macOS y Linux.</li>
+      <Section title="Organización">
+        <ul className="list-disc space-y-2 pl-5 marker:text-neutral-700">
+          <li>
+            Grafo de notas estilo Obsidian: fuerzas, filtros por consulta
+            (<code>file:</code>, <code>path:</code>, <code>tag:</code>, <code>content:</code>),
+            grupos de color, tags, adjuntos, flechas y ajustes persistentes por vault.
+          </li>
+          <li>Canvas infinito con nodos de archivos, texto y grupos.</li>
+          <li>Tableros Kanban con columnas, fechas y archivo de tareas.</li>
+          <li>Tareas y registro de ingresos/gastos con gráficas y categorías.</li>
+          <li>Notas diarias, plantillas y creación rápida de archivos.</li>
+        </ul>
+      </Section>
+
+      <Section title="Plataformas y rendimiento">
+        <ul className="list-disc space-y-2 pl-5 marker:text-neutral-700">
+          <li>Desktop en Linux, Windows y macOS; build experimental para Android.</li>
+          <li>Guardado automático del estado y la configuración al cerrar.</li>
+          <li>Cachés acotadas, lecturas compartidas con <code>Arc&lt;str&gt;</code> y control de <code>mtime</code> para el árbol de archivos.</li>
+          <li>Respaldos con <code>rsync</code> desde el módulo de servidor (experimental).</li>
         </ul>
       </Section>
 
       <Section title="Roadmap">
-        <p>Marmol está en desarrollo activo. Estas son las siguientes funciones planeadas:</p>
-        <ul className="grid list-disc gap-x-8 gap-y-2 pl-5 marker:text-neutral-700 sm:grid-cols-2">
+        <ul className="list-disc space-y-2 pl-5 marker:text-neutral-700">
           {roadmap.map((item) => (
             <li key={item}>{item}</li>
           ))}
@@ -84,17 +106,9 @@ export default function PaginaProyectoMarmol() {
 
       <Section title="Licencia">
         <p>
-          El proyecto se distribuye bajo la licencia MIT. Puedes revisar el texto completo
-          en el repositorio.
+          El proyecto se distribuye bajo la licencia MIT. El código y las notas del
+          proyecto están disponibles en el repositorio.
         </p>
-        <a
-          href={`${GITHUB_URL}/blob/main/LICENSE`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block text-sm text-neutral-300 underline decoration-neutral-700 underline-offset-4 transition-colors hover:text-white"
-        >
-          Ver archivo LICENSE
-        </a>
       </Section>
 
       <div className="mt-28">

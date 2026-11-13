@@ -64,19 +64,18 @@ export default function Home() {
 
           <div className="min-w-0 max-w-md">
             <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-neutral-500">
-              Lorem ipsum
+              Hola
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              Lorem ipsum dolor sit amet
+              Soy Leonardo.
             </h2>
             <p className="mt-5 text-[15px] leading-relaxed text-neutral-400">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere
-              erat a ante venenatis dapibus posuere velit aliquet. Cras mattis consectetur
-              purus sit amet fermentum.
+              Desarrollador de sistemas y hardware. Analista de datos, me gusta
+              entender cómo funcionan las cosas por dentro y construir herramientas y proyectos
+              interesantes y desafiantes
             </p>
             <p className="mt-3 text-[15px] leading-relaxed text-neutral-400">
-              Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula
-              porta felis euismod semper. Maecenas faucibus mollis interdum.
+              Estudié Ingeniería en Computación y Ciencia de Datos en la UNAM.
             </p>
           </div>
         </div>

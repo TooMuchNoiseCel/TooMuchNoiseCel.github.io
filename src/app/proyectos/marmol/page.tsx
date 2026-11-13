@@ -111,6 +111,23 @@ export default function PaginaProyectoMarmol() {
         </p>
       </Section>
 
+      <Section title="Demo en el navegador">
+        <p>
+          Esta es la versión WASM de Marmol. Puedes abrir los archivos de ejemplo,
+          cambiar el tema y probar el editor directamente aquí.
+        </p>
+        <div className="relative left-1/2 w-[min(1200px,calc(100vw-3rem))] -translate-x-1/2">
+          <div className="h-[560px] overflow-hidden rounded-2xl border border-neutral-800 bg-[#15171c] sm:h-[700px]">
+            <iframe
+              src="/marmol-wasm/index.html"
+              title="Demo de Marmol en WASM"
+              loading="lazy"
+              className="h-full w-full border-0"
+            />
+          </div>
+        </div>
+      </Section>
+
       <div className="mt-28">
         <RepoLink href={GITHUB_URL} />
       </div>

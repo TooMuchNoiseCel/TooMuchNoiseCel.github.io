@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Marmol WASM · demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --fondo: #15171c;
+      --panel: #1b1e24;
+      --panel-2: #101216;
+      --borde: #2c313a;
+      --texto: #e7e9ee;
+      --tenue: #8b93a7;
+      --acento: #7aa2f7;
+      --error: #f7768e;
+      --ok: #9ece6a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--fondo);
+      color: var(--texto);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    body { display: flex; align-items: stretch; }
+
+    #app { position: relative; flex: 1 1 auto; min-width: 0; height: 100vh; }
+
+    #canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      outline: none;
+      touch-action: none;
+    }
+
+    #estado {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: var(--fondo);
+      transition: opacity 240ms ease;
+      font-size: 15px;
+      z-index: 10;
+    }
+
+    #estado.oculto { opacity: 0; pointer-events: none; }
+    #estado .cargando { color: var(--tenue); }
+    #estado .error {
+      color: var(--error);
+      max-width: 80ch;
+      white-space: pre-wrap;
+      padding: 24px;
+    }
+
+    #panel-config {
+      flex: 0 0 330px;
+      width: 330px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--panel);
+      border-left: 1px solid var(--borde);
+      transition: margin-right 200ms ease;
+    }
+
+    #panel-config.oculto { margin-right: -330px; }
+
+    #panel-config header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--borde);
+      font-size: 13px;
+    }
+
+    #panel-config header .ruta { color: var(--tenue); font-size: 11px; }
+    #panel-config header .spacer { flex: 1 1 auto; }
+
+    #config {
+      flex: 1 1 auto;
+      width: 100%;
+      resize: none;
+      border: 0;
+      border-bottom: 1px solid var(--borde);
+      background: var(--panel-2);
+      color: var(--texto);
+      font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    footer {
+      border-top: 1px solid var(--borde);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #config-estado { min-height: 18px; font-size: 12px; color: var(--tenue); }
+    #config-estado.ok { color: var(--ok); }
+    #config-estado.error { color: var(--error); }
+
+    .fila { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .fila label { font-size: 12px; color: var(--tenue); }
+
+    select, button {
+      background: #22262e;
+      color: var(--texto);
+      border: 1px solid var(--borde);
+      border-radius: 5px;
+      padding: 5px 9px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    select { flex: 1 1 auto; }
+    button:hover { border-color: var(--acento); }
+    button.primario { background: #25324d; border-color: #3b5b92; }
+
+    .ayuda { color: var(--tenue); font-size: 11px; line-height: 1.45; }
+    .ayuda code { color: var(--texto); }
+
+    @media (max-width: 900px) {
+      #panel-config { flex-basis: 300px; width: 300px; }
+      #panel-config.oculto { margin-right: -300px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <canvas id="canvas" tabindex="0"></canvas>
+    <div id="estado">
+      <div class="cargando">Cargando Marmol WASM…</div>
+    </div>
+  </div>
+
+  <aside id="panel-config">
+    <header>
+      <strong>theme.json</strong>
+      <span class="ruta">configuración en vivo</span>
+      <span class="spacer"></span>
+      <button id="ocultar-panel" title="Ocultar panel">⟩</button>
+    </header>
+
+    <textarea id="config" spellcheck="false" autocomplete="off" autocapitalize="off">
+{
+  "bg_window": "#15171c",
+  "bg_panel": "#1b1e24",
+  "bg_input": "#101216",
+  "bg_faint": "#22262e",
+
+  "text_primary": "#e7e9ee",
+  "text_secondary": "#8b93a7",
+
+  "accent": "#7aa2f7",
+  "border": "#2c313a",
+
+  "success": "#9ece6a",
+  "error": "#f7768e",
+  "warn": "#e0af68",
+
+  "font_family": null,
+  "base_font_size": 14.0,
+  "corner_radius": 5,
+
+  "tab_bar_bg": "#1b1e24",
+  "tab_bar_height": 30.0,
+  "tab_bg_active": "#15171c",
+  "tab_bg_inactive": "#1b1e24",
+  "tab_bg_focused": "#22262e",
+  "tab_text_active": "#e7e9ee",
+  "tab_text_inactive": "#8b93a7",
+  "tab_outline": "#2c313a",
+  "tab_corner_radius": 5.0
+}
+    </textarea>
+
+    <footer>
+      <div id="config-estado">Esperando a que arranque la aplicación…</div>
+
+      <div class="fila">
+        <label for="tema">Tema</label>
+        <select id="tema">
+          <option value="marmol">Marmol (oscuro)</option>
+          <option value="tokyo">Tokyo Night</option>
+          <option value="dracula">Dracula</option>
+          <option value="nord">Nord</option>
+          <option value="gruvbox">Gruvbox</option>
+          <option value="rosepine">Rosé Pine</option>
+        </select>
+      </div>
+
+      <div class="fila">
+        <label for="fuente">Fuente</label>
+        <select id="fuente">
+          <option value="">Sistema (egui)</option>
+          <option value="Lato">Lato · sans</option>
+          <option value="Abril Fatface">Abril Fatface · serif</option>
+          <option value="Bebas Neue">Bebas Neue · condensada</option>
+          <option value="Lobster">Lobster · manuscrita</option>
+          <option value="Press Start 2P">Press Start 2P · pixel</option>
+          <option value="Space Mono">Space Mono · monoespaciada</option>
+        </select>
+      </div>
+
+      <div class="fila">
+        <button id="aplicar" class="primario">Aplicar ahora</button>
+        <button id="restaurar">Restaurar</button>
+        <button id="mostrar-panel" style="display:none">Mostrar panel</button>
+      </div>
+
+      <div class="ayuda">
+        Las fuentes se descargan de <strong>Google Fonts</strong> la primera
+        vez que las eliges y se aplican a toda la interfaz (se llama a
+        <code>add_font</code> con los bytes TTF). El resto de campos de
+        <code>theme.json</code> se aplica en tiempo real.
+      </div>
+    </footer>
+  </aside>
+
+  <script type="module">
+    import init, { WebHandle } from "./pkg/marmol.js";
+
+    const estado = document.getElementById("estado");
+    const config = document.getElementById("config");
+    const configEstado = document.getElementById("config-estado");
+    const panel = document.getElementById("panel-config");
+    const botonOcultar = document.getElementById("ocultar-panel");
+    const botonMostrar = document.getElementById("mostrar-panel");
+    const botonAplicar = document.getElementById("aplicar");
+    const botonRestaurar = document.getElementById("restaurar");
+    const selectorFuente = document.getElementById("fuente");
+
+    const CONFIG_INICIAL = config.value.trim() + "\n";
+    let manejador = null;
+    let temporizador = null;
+
+    function mostrarError(error) {
+      console.error(error);
+      estado.classList.remove("oculto");
+      estado.innerHTML = "";
+      const caja = document.createElement("div");
+      caja.className = "error";
+      caja.textContent = "No se pudo iniciar Marmol WASM:\n\n" + String(error);
+      estado.appendChild(caja);
+    }
+
+    // Temas predefinidos: mismo esquema que theme.json.
+    const TEMAS = {
+      marmol: {
+        bg_window: "#15171c", bg_panel: "#1b1e24", bg_input: "#101216",
+        bg_faint: "#22262e", text_primary: "#e7e9ee", text_secondary: "#8b93a7",
+        accent: "#7aa2f7", border: "#2c313a", success: "#9ece6a",
+        error: "#f7768e", warn: "#e0af68", font_family: null,
+        base_font_size: 14.0, corner_radius: 5,
+        tab_bar_bg: "#1b1e24", tab_bar_height: 30.0,
+        tab_bg_active: "#15171c", tab_bg_inactive: "#1b1e24",
+        tab_bg_focused: "#22262e", tab_text_active: "#e7e9ee",
+        tab_text_inactive: "#8b93a7", tab_outline: "#2c313a",
+        tab_corner_radius: 5.0,
+      },
+      tokyo: {
+        bg_window: "#1a1b26", bg_panel: "#16161e", bg_input: "#0c0d14",
+        bg_faint: "#24283b", text_primary: "#c0caf5", text_secondary: "#565f89",
+        accent: "#7aa2f7", border: "#2f3549", success: "#9ece6a",
+        error: "#f7768e", warn: "#e0af68", font_family: null,
+        base_font_size: 14.0, corner_radius: 6,
+        tab_bar_bg: "#16161e", tab_bar_height: 32.0,
+        tab_bg_active: "#1a1b26", tab_bg_inactive: "#16161e",
+        tab_bg_focused: "#24283b", tab_text_active: "#c0caf5",
+        tab_text_inactive: "#565f89", tab_outline: "#2f3549",
+        tab_corner_radius: 6.0,
+      },
+      dracula: {
+        bg_window: "#282a36", bg_panel: "#21222c", bg_input: "#191a21",
+        bg_faint: "#343746", text_primary: "#f8f8f2", text_secondary: "#8b93b8",
+        accent: "#bd93f9", border: "#44475a", success: "#50fa7b",
+        error: "#ff5555", warn: "#f1fa8c", font_family: null,
+        base_font_size: 14.0, corner_radius: 8,
+        tab_bar_bg: "#21222c", tab_bar_height: 32.0,
+        tab_bg_active: "#282a36", tab_bg_inactive: "#21222c",
+        tab_bg_focused: "#343746", tab_text_active: "#f8f8f2",
+        tab_text_inactive: "#8b93b8", tab_outline: "#44475a",
+        tab_corner_radius: 8.0,
+      },
+      nord: {
+        bg_window: "#2e3440", bg_panel: "#3b4252", bg_input: "#272c36",
+        bg_faint: "#434c5e", text_primary: "#eceff4", text_secondary: "#a3aec2",
+        accent: "#88c0d0", border: "#4c566a", success: "#a3be8c",
+        error: "#bf616a", warn: "#ebcb8b", font_family: null,
+        base_font_size: 14.0, corner_radius: 4,
+        tab_bar_bg: "#3b4252", tab_bar_height: 30.0,
+        tab_bg_active: "#2e3440", tab_bg_inactive: "#3b4252",
+        tab_bg_focused: "#434c5e", tab_text_active: "#eceff4",
+        tab_text_inactive: "#a3aec2", tab_outline: "#4c566a",
+        tab_corner_radius: 4.0,
+      },
+      gruvbox: {
+        bg_window: "#282828", bg_panel: "#32302f", bg_input: "#1d2021",
+        bg_faint: "#3c3836", text_primary: "#ebdbb2", text_secondary: "#a89984",
+        accent: "#fabd2f", border: "#504945", success: "#b8bb26",
+        error: "#fb4934", warn: "#fe8019", font_family: null,
+        base_font_size: 14.0, corner_radius: 3,
+        tab_bar_bg: "#32302f", tab_bar_height: 30.0,
+        tab_bg_active: "#282828", tab_bg_inactive: "#32302f",
+        tab_bg_focused: "#3c3836", tab_text_active: "#ebdbb2",
+        tab_text_inactive: "#a89984", tab_outline: "#504945",
+        tab_corner_radius: 3.0,
+      },
+      rosepine: {
+        bg_window: "#191724", bg_panel: "#1f1d2e", bg_input: "#16141f",
+        bg_faint: "#26233a", text_primary: "#e0def4", text_secondary: "#908caa",
+        accent: "#c4a7e7", border: "#403d52", success: "#9ccfd8",
+        error: "#eb6f92", warn: "#f6c177", font_family: null,
+        base_font_size: 14.0, corner_radius: 10,
+        tab_bar_bg: "#1f1d2e", tab_bar_height: 32.0,
+        tab_bg_active: "#191724", tab_bg_inactive: "#1f1d2e",
+        tab_bg_focused: "#26233a", tab_text_active: "#e0def4",
+        tab_text_inactive: "#908caa", tab_outline: "#403d52",
+        tab_corner_radius: 10.0,
+      },
+    };
+
+    const selectorTema = document.getElementById("tema");
+
+    function aplicarTema(nombre) {
+      const tema = TEMAS[nombre];
+      if (!tema) return;
+      // Conserva la fuente activa (no la pisa el tema).
+      let fuente = null;
+      try { fuente = JSON.parse(config.value).font_family ?? null; } catch (e) {}
+      const datos = { ...tema, font_family: fuente };
+      config.value = JSON.stringify(datos, null, 2) + "\n";
+      aplicarConfig();
+    }
+
+    selectorTema.addEventListener("change", () => {
+      aplicarTema(selectorTema.value);
+    });
+
+    // Fuentes de Google (repositorio google/fonts vía jsDelivr, CORS abierto).
+    const FUENTES_WEB = {
+      "Lato": "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/lato/Lato-Regular.ttf",
+      "Abril Fatface": "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/abrilfatface/AbrilFatface-Regular.ttf",
+      "Bebas Neue": "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/bebasneue/BebasNeue-Regular.ttf",
+      "Lobster": "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/lobster/Lobster-Regular.ttf",
+      "Press Start 2P": "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/pressstart2p/PressStart2P-Regular.ttf",
+      "Space Mono": "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/spacemono/SpaceMono-Regular.ttf",
+    };
+
+    async function aplicarFuente(nombre) {
+      if (!manejador) return;
+      try {
+        if (!nombre) {
+          manejador.reset_font();
+          configEstado.textContent = "Fuente del sistema (egui).";
+          configEstado.className = "ok";
+          return;
+        }
+        const url = FUENTES_WEB[nombre];
+        if (!url) return;
+        configEstado.textContent = `Descargando ${nombre}…`;
+        configEstado.className = "";
+        const respuesta = await fetch(url);
+        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+        const bytes = new Uint8Array(await respuesta.arrayBuffer());
+        if (manejador.add_font(nombre, bytes)) {
+          configEstado.textContent = `Fuente aplicada: ${nombre}`;
+          configEstado.className = "ok";
+        } else {
+          throw new Error("la aplicación no está iniciada");
+        }
+      } catch (e) {
+        configEstado.textContent = `No se pudo cargar la fuente: ${e}`;
+        configEstado.className = "error";
+      }
+    }
+
+    function aplicarConfig() {
+      if (!manejador) return;
+      try {
+        const resultado = manejador.apply_config(config.value);
+        if (resultado === "ok") {
+          configEstado.textContent = "Aplicado correctamente.";
+          configEstado.className = "ok";
+        } else {
+          configEstado.textContent = resultado;
+          configEstado.className = "error";
+        }
+      } catch (e) {
+        configEstado.textContent = String(e);
+        configEstado.className = "error";
+      }
+    }
+
+    function programarAplicacion() {
+      clearTimeout(temporizador);
+      temporizador = setTimeout(aplicarConfig, 180);
+    }
+
+    config.addEventListener("input", programarAplicacion);
+    botonAplicar.addEventListener("click", aplicarConfig);
+    botonRestaurar.addEventListener("click", () => {
+      config.value = CONFIG_INICIAL;
+      selectorFuente.value = "";
+      aplicarConfig();
+    });
+
+    selectorFuente.addEventListener("change", () => {
+      aplicarFuente(selectorFuente.value);
+    });
+
+    botonOcultar.addEventListener("click", () => {
+      panel.classList.add("oculto");
+      botonMostrar.style.display = "";
+    });
+    botonMostrar.addEventListener("click", () => {
+      panel.classList.remove("oculto");
+      botonMostrar.style.display = "none";
+    });
+
+    async function arrancar() {
+      await init();
+
+      manejador = new WebHandle();
+      await manejador.start(document.getElementById("canvas"));
+
+      if (manejador.has_panicked && manejador.has_panicked()) {
+        throw new Error(manejador.panic_message?.() ?? "La aplicación ha fallado.");
+      }
+
+      // Permite abrir una nota concreta: ?file=LaTeX.md
+      const params = new URLSearchParams(location.search);
+      const pedido = params.get("file");
+      if (pedido && manejador.open_file) {
+        manejador.open_file("/marmol-demo/" + pedido.replace(/^\/+/, ""));
+      }
+
+      // Permite probar un tema: ?theme=dracula
+      const temaPedido = params.get("theme");
+      if (temaPedido && TEMAS[temaPedido]) {
+        selectorTema.value = temaPedido;
+        aplicarTema(temaPedido);
+      }
+
+      // Permite probar una fuente: ?font=Lobster
+      const fuentePedida = params.get("font");
+      if (fuentePedida && FUENTES_WEB[fuentePedida]) {
+        selectorFuente.value = fuentePedida;
+        await aplicarFuente(fuentePedida);
+      }
+
+      estado.classList.add("oculto");
+      setTimeout(() => estado.remove(), 300);
+      aplicarConfig();
+    }
+
+    arrancar().catch(mostrarError);
+  </script>
+</body>
+</html>
